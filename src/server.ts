@@ -12,10 +12,9 @@ First version of url capture db. Blog with before and after notes. Also .md in t
 - [ ] Type
 - [ ] Process request
 - [ ] Array of namespaced tags
-- [ ] Page to show the latest 10 bookmarks
+- [x] Page to show the latest 10 bookmarks
 - [ ] All code should be as simple and clear as possible.
 - [ ] Code for only 60 minutes
-
  */
 
 import express from "express"
@@ -67,6 +66,41 @@ async function save_url(url) {
     return "all good"
 }
 
+type Visitor = (file) => Promise<void>;
+
+async function getFiles(dir, visitor:Visitor) {
+    // Get this directory's contents
+    const files = await fs.promises.readdir(dir);
+    // Wait on all the files of the directory
+    return Promise.all(files
+        // Prepend the directory this file belongs to
+        .map(f => path.join(dir, f))
+        // Iterate the files and see if we need to recurse by type
+        .map(async f => {
+            // See what type of file this is
+            const stats = await fs.promises.stat(f);
+            // Recurse if it is a directory, otherwise return the filepath
+            return stats.isDirectory() ? getFiles(f,visitor) : visitor(f);
+        }));
+}
+
+async function search_queued() {
+    console.log("searching queued")
+    let results = []
+    await getFiles(DB_ROOT,async (f) => {
+        console.log("visiting",f)
+        let buf = await fs.promises.readFile(f);
+        let item = JSON.parse(buf.toString())
+        console.log("item",item)
+        if(item.type === 'bookmark') results.push(item)
+    })
+    console.log("final results",results)
+    return results
+}
+// search_queued().then((data)=>{
+//     console.log("the data is",data)
+//     process.exit(0)
+// })
 // save_url({url:"http://josh.earth/"})
 //     .then((msg)=>{
 //         console.log("msg",msg)
@@ -87,6 +121,14 @@ app.post('/submit/bookmark',(req,res)=>{
 })
 app.get('/',(req,res) => {
     res.send('There is nothing here\n')
+})
+app.get('/bookmarks/queue',(req,res)=>{
+    search_queued()
+        .then((data:any[]) => res.json({status:'success',data:data}))
+        .catch((e:Error) => res.json({status:'error',message:e.toString()}))
+})
+app.get('/bookmarks/',(req,res)=>{
+    res.sendFile("bookmarks.html",{root:'resources'})
 })
 
 app.listen(PORT,() => {

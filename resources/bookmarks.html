@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+<h1>this is the bookmarks</h1>
+<ul id="bookmarks"></ul>
+<script>
+    const $ = (sel) => document.querySelector(sel)
+    const on = (el,type,cb) => el.addEventListener(type,cb)
+    function render_bookmarks(result) {
+        // result.data.sort((a,b)=>a.data.created - b.data.created)
+        let html = result.data.map(item => {
+            console.log("item is",item.data)
+            return `<li><a href='${item.data.url}' target="_blank">${item.data.url}</a></li>`
+        }).join("\n")
+        console.log("html is",html)
+        $("#bookmarks").innerHTML = html
+    }
+    fetch("./queue").then(d => d.json()).then(render_bookmarks)
+</script>
+</body>
+</html>
