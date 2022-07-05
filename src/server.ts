@@ -45,7 +45,7 @@ function gen_path(d: Date) {
     return `${d.getUTCFullYear()}/${d.getUTCMonth()}/${d.getUTCDate()}/${d.getUTCHours()}/${d.getUTCMinutes()}`
 }
 
-async function save_url(obj) {
+async function save_url(url) {
     let item = {
         id:gen_id('bookmark'),
         created:new Date(),
@@ -54,7 +54,7 @@ async function save_url(obj) {
         tags:[],
         data:{
             status:'unprocessed',
-            url:obj.url,
+            url:url,
         }
     }
     console.info("item is",item)
