@@ -7,9 +7,9 @@ First version of url capture db. Blog with before and after notes. Also .md in t
 [x] Passcode for temporary auth
 - [ ] Bookmarklet.
 [x] If get instead of post render a form
-[ ] Source
+[x] Source
 [x] Creation time
-- [ ] Type
+- [x] Type
 - [ ] Process request
 - [ ] Array of namespaced tags
 - [x] Page to show the latest 10 bookmarks
