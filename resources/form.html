@@ -6,5 +6,41 @@
 </head>
 <body>
 <h3>this is a form</h3>
+<form id="bookmark">
+    <label>
+        auth code
+        <input type="text" id="authcode">
+    </label>
+    <label>
+        URL
+        <input type="text" name="url" id="url">
+    </label>
+    <button id="save">save</button>
+</form>
+<script>
+    const $ = (sel) => document.querySelector(sel)
+    const on = (el,type,cb) => el.addEventListener(type,cb)
+    console.log("doing the form")
+    on($("#save"),'click',(e)=>{
+        console.log("saving the form")
+        let data = {
+            url: $("#url").value,
+            authcode:$("#authcode").value,
+        }
+        e.preventDefault()
+        fetch('./',{
+            method:'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data),
+        }).then(resp => resp.json())
+            .then(res => console.log('yay',res))
+            .catch(e => console.error('error',e))
+
+    })
+
+
+</script>
 </body>
 </html>
