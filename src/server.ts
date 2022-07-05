@@ -46,7 +46,6 @@ function gen_path(d: Date) {
 }
 
 async function save_url(obj) {
-    console.log("saving the url",obj)
     let item = {
         id:gen_id('bookmark'),
         created:new Date(),
@@ -58,13 +57,13 @@ async function save_url(obj) {
             url:obj.url,
         }
     }
-    console.log("item is",item)
+    console.info("item is",item)
     let pth = gen_path(item.created)
     let dir_path = path.resolve(path.join(DB_ROOT,pth))
     await fs.promises.mkdir(dir_path, {recursive: true})
     let file_path = path.join(dir_path,item.id+'.json')
     await fs.promises.writeFile(file_path,JSON.stringify(item))
-    console.log("wrote file",file_path)
+    console.info("wrote file",file_path)
     return "all good"
 }
 
@@ -77,8 +76,8 @@ async function save_url(obj) {
 //
 //     })
 //     .catch(e => console.error('errored',e))
+
 app.post('/submit/bookmark',(req,res)=>{
-    console.log("submitted",req.params,req.query,req.body)
     if(req.body.authcode !== settings.authcode) return fail(res,'bad auth code')
     if(!req.body.url) return fail(res,'missing url')
     if(!req.body.url.toLowerCase().startsWith('http')) return fail(res,'bad url')
@@ -87,10 +86,9 @@ app.post('/submit/bookmark',(req,res)=>{
         .catch((e:Error) => res.json({status:'error',message:e.toString()}))
 })
 app.get('/',(req,res) => {
-    res.send('hello world\n')
+    res.send('There is nothing here\n')
 })
-console.log("this is the servesr")
 
 app.listen(PORT,() => {
-    console.log(`sdtarted the server on port ${PORT}`)
+    console.info(`started the server on port ${PORT}`)
 })
