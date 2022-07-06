@@ -14,7 +14,7 @@ of JSON files. This took only a few tens of lines of typescript and it's
 not really optimized yet. It took a bit more than an hour to build, complete
 with kiddo distractions. I'd say that's pretty good.
 
-The repo is here
+The [repo is here](https://github.com/joshmarinacci/boomarks_db)
 
 Next I'll add a post processor that will try to extract useful data from the bookmarks,
 including, in order of increasing difficulty.
