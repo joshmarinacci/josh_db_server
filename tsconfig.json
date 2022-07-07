@@ -8,9 +8,8 @@
     "outDir": "build",
     "esModuleInterop": true
   },
-  "files": [
-    "src/server.ts",
-    "src/process.ts"
+  "include": [
+    "src/*.ts",
   ],
   "exclude": [
     "node_modules"

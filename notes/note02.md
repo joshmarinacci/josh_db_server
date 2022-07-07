@@ -13,7 +13,7 @@ pages require JS to run for any actual content to appear, clearly intentional on
 part. Good enough for now.
 
 Now to hook it up.
-Every time a document comes into the main server which need to pick it up, process it, and insert
+Every time a document comes into the main server which need to pick it up, process it, and insert_from_disk
 a new document with the parsed content. 
 
 to fetch urls, call the 
