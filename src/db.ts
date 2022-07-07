@@ -15,7 +15,10 @@ type Item = {
 export class DB {
     private root_dir: string;
     private items: Item[];
-    constructor(root_dir:string) {
+    private use_disk: boolean;
+
+    constructor(root_dir: string, use_disk: boolean) {
+        this.use_disk = use_disk
         this.root_dir = root_dir
         this.items = []
     }
@@ -65,13 +68,18 @@ export class DB {
                 siteName: obj.siteName,
             }
         }
-        console.log("final obj to store", item)
-        let pth = gen_path(item.created)
-        let dir_path = path.resolve(path.join(this.root_dir, pth))
-        await fs.promises.mkdir(dir_path, {recursive: true})
-        let file_path = path.join(dir_path, item.id + '.json')
-        await fs.promises.writeFile(file_path, JSON.stringify(item))
-        console.info("wrote file", file_path)
+        if(item.supersedes) {
+            this.handle_supersedes(item)
+        }
+        if(this.use_disk) {
+            console.log("final obj to store", item)
+            let pth = gen_path(item.created)
+            let dir_path = path.resolve(path.join(this.root_dir, pth))
+            await fs.promises.mkdir(dir_path, {recursive: true})
+            let file_path = path.join(dir_path, item.id + '.json')
+            await fs.promises.writeFile(file_path, JSON.stringify(item))
+            console.info("wrote file", file_path)
+        }
         this.items.push(item)
     }
 
@@ -88,23 +96,53 @@ export class DB {
             }
         }
         console.info("item is", item)
-        let pth = gen_path(item.created)
-        let dir_path = path.resolve(path.join(this.root_dir, pth))
-        await fs.promises.mkdir(dir_path, {recursive: true})
-        let file_path = path.join(dir_path, item.id + '.json')
-        await fs.promises.writeFile(file_path, JSON.stringify(item))
-        console.info("wrote file", file_path)
+        if(this.use_disk) {
+            let pth = gen_path(item.created)
+            let dir_path = path.resolve(path.join(this.root_dir, pth))
+            await fs.promises.mkdir(dir_path, {recursive: true})
+            let file_path = path.join(dir_path, item.id + '.json')
+            await fs.promises.writeFile(file_path, JSON.stringify(item))
+            console.info("wrote file", file_path)
+        }
         this.items.push(item)
     }
+
+    all() {
+        return this.items
+    }
+
+    init() {
+        let supers = this.items.filter(it => it.supersedes)
+        console.log("found the supers",supers)
+        supers.forEach( sup => {
+            this.handle_supersedes(sup)
+        })
+    }
+    private handle_supersedes(item: Item) {
+        console.log("this item supersedes",item)
+        console.log("original", this.items.filter(it => it.id === item.supersedes))
+        let possibly_orig = this.items.filter(it => it.id === item.supersedes)
+        if(possibly_orig.length < 1) {
+            console.error(`trying to supersede ${item.supersedes} but couldn't find the original`)
+            return `cannot find original ${item.supersedes}`
+        } else {
+            console.log("removing the original")
+            this.items = this.items.filter(it => it.id !== item.supersedes)
+            return `removed the origin ${item.supersedes}`
+        }
+    }
 }
-export async function load_db(root) {
-    let db = new DB(root)
-    await getFiles(root, async (f) => {
-        console.log("visiting", f)
-        let buf = await fs.promises.readFile(f);
-        let item = JSON.parse(buf.toString())
-        console.log("item", item.id)
-        db.insert_from_disk(item)
-    })
+export async function load_db(root, use_disk: boolean) {
+    let db = new DB(root, use_disk)
+    if(use_disk) {
+        await getFiles(root, async (f) => {
+            console.log("visiting", f)
+            let buf = await fs.promises.readFile(f);
+            let item = JSON.parse(buf.toString())
+            console.log("item", item.id)
+            db.insert_from_disk(item)
+        })
+    }
+    db.init()
     return db
 }
