@@ -1,3 +1,4 @@
+# 2022 July 5th
 I've started a few small projects as part of a larger initiative. 
 As part of this I’m trying to do updates of my research every day. 
 This means both documenting what I do and also *sharing* it (maybe in

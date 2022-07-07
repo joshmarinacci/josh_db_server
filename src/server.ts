@@ -66,6 +66,34 @@ async function save_url(url) {
     return "all good"
 }
 
+async function save_processed_url(obj) {
+    console.log('saving processed url',obj)
+    let item = {
+        id:gen_id('bookmark'),
+        created:new Date(),
+        source:'web',
+        type:'bookmark',
+        tags:[],
+        supersedes:obj.original,
+        data: {
+            status:'processed',
+            url:obj.url,
+            title:obj.title,
+            byline:obj.byline,
+            excerpt:obj.excerpt,
+            siteName:obj.siteName,
+        }
+    }
+    console.log("final obj to store",item)
+    let pth = gen_path(item.created)
+    let dir_path = path.resolve(path.join(DB_ROOT,pth))
+    await fs.promises.mkdir(dir_path, {recursive: true})
+    let file_path = path.join(dir_path,item.id+'.json')
+    await fs.promises.writeFile(file_path,JSON.stringify(item))
+    console.info("wrote file",file_path)
+    return "all good"
+}
+
 type Visitor = (file) => Promise<void>;
 
 async function getFiles(dir, visitor:Visitor) {
@@ -92,24 +120,28 @@ async function search_queued() {
         let buf = await fs.promises.readFile(f);
         let item = JSON.parse(buf.toString())
         console.log("item",item)
-        if(item.type === 'bookmark') results.push(item)
+        if(item.type === 'bookmark') {
+            if(item.data.status==='unprocessed') results.push(item)
+        }
     })
     console.log("final results",results)
     return results
 }
-// search_queued().then((data)=>{
-//     console.log("the data is",data)
-//     process.exit(0)
-// })
-// save_url({url:"http://josh.earth/"})
-//     .then((msg)=>{
-//         console.log("msg",msg)
-//         if(true) {
-//             process.exit(0)
-//         }
-//
-//     })
-//     .catch(e => console.error('errored',e))
+async function search_processed() {
+    console.log("searching processed")
+    let results = []
+    await getFiles(DB_ROOT,async (f) => {
+        console.log("visiting",f)
+        let buf = await fs.promises.readFile(f);
+        let item = JSON.parse(buf.toString())
+        console.log("item",item)
+        if(item.type === 'bookmark') {
+            if(item.data.status==='processed') results.push(item)
+        }
+    })
+    console.log("final results",results)
+    return results
+}
 
 app.post('/submit/bookmark',(req,res)=>{
     if(req.body.authcode !== settings.authcode) return fail(res,'bad auth code')
@@ -119,11 +151,22 @@ app.post('/submit/bookmark',(req,res)=>{
         .then((msg:string)=>res.json({status:'success',message:msg}))
         .catch((e:Error) => res.json({status:'error',message:e.toString()}))
 })
+app.post('/submit/processed-bookmark',(req,res)=>{
+    if(req.body.authcode !== settings.authcode) return fail(res,'bad auth code')
+    save_processed_url(req.body)
+        .then((msg:string)=>res.json({status:'success',message:msg}))
+        .catch((e:Error) => res.json({status:'error',message:e.toString()}))
+})
 app.get('/',(req,res) => {
     res.send('There is nothing here\n')
 })
 app.get('/bookmarks/queue',(req,res)=>{
     search_queued()
+        .then((data:any[]) => res.json({status:'success',data:data}))
+        .catch((e:Error) => res.json({status:'error',message:e.toString()}))
+})
+app.get('/bookmarks/processed',(req,res)=>{
+    search_processed()
         .then((data:any[]) => res.json({status:'success',data:data}))
         .catch((e:Error) => res.json({status:'error',message:e.toString()}))
 })

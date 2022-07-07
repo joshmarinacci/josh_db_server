@@ -1,13 +1,17 @@
 {
   "compilerOptions": {
     "allowJs": false,
-    "module": "commonjs",
-    "target": "ES2016",
+    "module": "es6",
+    "target": "es5",
     "moduleResolution": "node",
     "sourceMap": true,
     "outDir": "build",
     "esModuleInterop": true
   },
+  "files": [
+    "src/server.ts",
+    "src/process.ts"
+  ],
   "exclude": [
     "node_modules"
   ]
