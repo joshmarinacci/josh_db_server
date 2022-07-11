@@ -55,7 +55,14 @@
         // result.data.sort((a,b)=>a.data.created - b.data.created)
         let html = result.data.map(item => {
             console.log("item is",item.data)
-            return `<li><a href='${item.data.url}' target="_blank">${item.data.url}</a></li>`
+            if(item.data.title) {
+                return `<li>
+                        <a href="${item.data.url}">${item.data.title}</a>
+                        <p>${item.data.excerpt?item.data.excerpt:"no excerpt"}</p>
+                        </li>`
+            } else {
+                return `<li><a href='${item.data.url}' target="_blank">${item.data.url}</a></li>`
+            }
         }).join("\n")
         console.log("html is",html)
         target.innerHTML = html

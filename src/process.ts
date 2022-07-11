@@ -35,7 +35,15 @@ import {Readability} from "@mozilla/readability"
 import {JSDOM} from "jsdom"
 import fetch from "node-fetch"
 import puppeteer from "puppeteer"
-import {file_readable, Logger, make_logger, mkdir, read_json_file} from "./util.js";
+import {
+    file_readable,
+    json_get,
+    json_post,
+    Logger,
+    make_logger,
+    mkdir,
+    read_json_file
+} from "./util.js";
 import {ServerSettings} from "./server";
 
 const SCREENSHOT_DIR = "images"
@@ -103,25 +111,25 @@ async function test_screenshots() {
 }
 
 function get_next() {
-    return fetch('http://localhost:3000/bookmarks/queue').then(d => d.json()).then((d:any) => {
-        console.log("got the doc back",d)
+    return json_get('http://localhost:3000/bookmarks/queue').then((d:any) => {
+        log.info("got the doc back",d)
         if(d && d.data && d.data.length > 0) {
-            console.log(d.data.map(i => i.data.url))
-            console.log("first element",d.data[0])
+            log.info(d.data.map(i => i.data.url))
+            log.info("first element",d.data[0])
             return d.data[0]
         }
     })
 }
 function process(item) {
-    console.log("processing",item)
+    log.info("processing",item)
     return JSDOM.fromURL(item.data.url).then(dom => {
         // console.log("dom is", dom.window.document)
         let reader = new Readability(dom.window.document)
         let article = reader.parse()
-        console.log("url", item.data.url)
+        log.info("url", item.data.url)
         // console.log("article",article)
-        console.log("title", article.title)
-        console.log("byline", article.byline)
+        log.info("title", article.title)
+        log.info("byline", article.byline)
         console.log("excerpt", article.excerpt)
         console.log("site name", article.siteName)
         console.log("content", article.content.substring(0, 1000))
@@ -135,7 +143,7 @@ function process(item) {
             success:true,
         }
     }).catch(e => {
-        console.error(e)
+        log.error(e)
         return {
             original:item.id,
             url:item.data.url,
@@ -150,14 +158,8 @@ type ProcessorSettings = {
 }
 function submit(it, settings:ProcessorSettings) {
     it.authcode = settings.authcode
-    console.log("sending back item",it)
-    return fetch('http://localhost:3000/submit/processed-bookmark',{
-        method:'POST',
-        headers: {
-            'Content-Type':'application/json',
-        },
-        body:JSON.stringify(it)
-    }).then(r => r.json())
+    log.info("sending back item",it)
+    return json_post('http://localhost:3000/submit/processed-bookmark',it)
 }
 
 export async function start_processor() {
