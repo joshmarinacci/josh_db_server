@@ -4,9 +4,10 @@
   "description": "",
   "type": "module",
   "scripts": {
-    "dev": "npx parcel build src/server.ts && node build/server.js",
-    "process-dev": "npx parcel build src/process.ts && node build/server.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "tsc",
+    "start-server": "node build/start_server.js",
+    "run-process": "node build/start_process.js",
+    "test-server": "tsc && node build/test_server.js "
   },
   "dependencies": {
     "@mozilla/readability": "^0.4.2",

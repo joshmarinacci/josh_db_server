@@ -132,7 +132,7 @@ export class DB {
         }
     }
 }
-export async function load_db(root, use_disk: boolean) {
+export async function load_db(root, PORT:number, use_disk: boolean) {
     let db = new DB(root, use_disk)
     if(use_disk) {
         await getFiles(root, async (f) => {

@@ -18,17 +18,14 @@ First version of url capture db. Blog with before and after notes. Also .md in t
  */
 
 import express from "express"
-import * as fs from "fs";
-import path from "path";
-import {gen_id, getFiles} from "./util.js";
-import {DB, load_db} from "./db.js";
+import {DB} from "./db.js";
+import {Server} from "http";
 
-const DB_ROOT = "./DB";
-const PORT = 3000
+export type ServerSettings = {
+    authcode:string
+}
 
-const settings = JSON.parse(fs.readFileSync("./settings.json").toString())
-console.info("settings are",settings)
-async function start_server(db: DB) {
+export async function start_server(db: DB, PORT: number, settings: ServerSettings):Promise<Server> {
     const app = express()
     app.use(express.json())
     app.get('/submit/bookmark', (req, res) => {
@@ -88,52 +85,7 @@ async function start_server(db: DB) {
         res.sendFile("bookmarks.html", {root: 'resources'})
     })
 
-    app.listen(PORT, () => {
+    return app.listen(PORT, () => {
         console.info(`started the server on port ${PORT}`)
     })
 }
-
-/*
-test.
- */
-
-async function start() {
-    let db = await load_db(DB_ROOT,true)
-    console.log("loaded the DB", db)
-    return start_server(db)
-}
-start().then(l => console.log("done",l))
-
-async function test() {
-    let db = await load_db(DB_ROOT,false)
-    console.assert(db.all().length === 0)
-
-    //    create unprocessed url item. persist to disk
-    await db.save_unprocessed("http://www.google.com/")
-
-    //     search for unprocessed url item, confirm it's there.
-    console.assert(db.search_unprocessed().length === 1)
-
-    let orig = db.search_unprocessed()[0]
-
-    // confirm there's nothing processed yet
-    console.assert(db.search_processed().length === 0)
-    //     create processed url item, persist to disk
-    await db.save_processed({
-        original:orig.id,
-        // @ts-ignore
-        url:orig.url,
-        title:'test title'
-    })
-
-    //     search for processed url item, confirm it's there.
-    console.assert(db.search_processed().length === 1,'one processed')
-    //     search for unprocessed url, confirm it's superseded by the processed one
-    let items = db.search_unprocessed()
-    console.log("unprocessed items",items)
-    console.assert(db.search_unprocessed().length === 0, 'no unprocessed')
-
-    console.log("done with the test")
-}
-
-// test().then(l => console.log("done",l)).catch(e => console.error(e))
