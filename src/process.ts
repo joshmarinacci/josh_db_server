@@ -145,7 +145,10 @@ function process(item) {
     })
 }
 
-function submit(it) {
+type ProcessorSettings = {
+    authcode:string
+}
+function submit(it, settings:ProcessorSettings) {
     it.authcode = settings.authcode
     console.log("sending back item",it)
     return fetch('http://localhost:3000/submit/processed-bookmark',{
@@ -171,7 +174,7 @@ export async function start_processor() {
     if(item) {
         let data = await process(item)
         log.info("data is", data)
-        await submit(data)
+        await submit(data,settings)
     } else {
         log.info("nothing to process")
     }

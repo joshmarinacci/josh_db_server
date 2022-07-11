@@ -5,7 +5,7 @@
     <title>Title</title>
 </head>
 <body>
-<h3>this is a form</h3>
+<h1>Add Bookmark</h1>
 <form id="bookmark">
     <label>
         auth code
@@ -17,6 +17,14 @@
     </label>
     <button id="save">save</button>
 </form>
+
+<h1>current bookmarks</h1>
+<button id="load">load</button>
+<h3>bookmarks</h3>
+<ul id="processed"></ul>
+<h3>queue</h3>
+<ul id="bookmarks"></ul>
+
 <script>
     const $ = (sel) => document.querySelector(sel)
     const on = (el,type,cb) => el.addEventListener(type,cb)
@@ -40,6 +48,27 @@
 
     })
 
+
+    function render_bookmarks(target,result) {
+        console.log("data is",result)
+        console.log("item count",result.data.length)
+        // result.data.sort((a,b)=>a.data.created - b.data.created)
+        let html = result.data.map(item => {
+            console.log("item is",item.data)
+            return `<li><a href='${item.data.url}' target="_blank">${item.data.url}</a></li>`
+        }).join("\n")
+        console.log("html is",html)
+        target.innerHTML = html
+    }
+    on($("#load"),'click',() => {
+        let url = "http://localhost:3000/bookmarks/queue"
+        fetch(url)
+            .then(d => d.json())
+            .then((data)=>render_bookmarks($("#bookmarks"),data))
+        fetch("../../bookmarks/processed")
+            .then(d => d.json())
+            .then((data)=>render_bookmarks($("#processed"),data))
+    })
 
 </script>
 </body>
