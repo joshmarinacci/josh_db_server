@@ -119,3 +119,9 @@ export async function file_readable(SETTINGS: string): Promise<boolean> {
         return false
     }
 }
+
+export function sleep(sec: number): Promise<void> {
+    return new Promise((res, rej) => {
+        setTimeout(() => res(), Math.floor(sec * 1000))
+    })
+}
