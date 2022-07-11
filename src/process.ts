@@ -34,6 +34,7 @@ https://arstechnica.com/gadgets/2022/07/first-risc-v-laptop-expected-to-ship-in-
 import {Readability} from "@mozilla/readability"
 import {JSDOM} from "jsdom"
 import fetch from "node-fetch"
+import puppeteer  from 'puppeteer'
 import fs from "fs";
 
 const settings = JSON.parse(fs.readFileSync("./settings.json").toString())
@@ -65,6 +66,33 @@ function test() {
     })).then(() => {
         console.log("fully done")
     })
+}
+
+async function generate_screenshot(url) {
+    const browser = await puppeteer.launch();
+    const page = await browser.newPage();
+    await page.setViewport({
+        width: 800,
+        height: 600,
+        deviceScaleFactor:2,
+    })
+    let pat = /\ |\:|\/|\./ig;
+    let file_name = url.replace(pat,"_")
+    console.log("scanning",file_name)
+    await page.goto(url);
+    await page.pdf({ path: `images/page_${file_name}.pdf.pdf`, format: 'letter' });
+    await page.screenshot({path: `images/page_${file_name}.thumb.png`})
+    // await page.screenshot({path: `images/page_${u}.png`, fullPage:true});
+    await browser.close();
+}
+async function test_screenshots() {
+    for(let url of TEST_URLS) {
+        try {
+            await generate_screenshot(url)
+        } catch (e) {
+            console.error("failed",url,e)
+        }
+    }
 }
 
 function get_next() {
@@ -122,12 +150,13 @@ function submit(it) {
     }).then(r => r.json())
 }
 
-get_next()
-    .then(process)
-    .then(submit)
-    .then((r)=>console.log("done",r))
-//fetch /bookmarks/queue
-//fetch /bookmarks/processed
-//fetch /submit/processed-bookmark
+async function start() {
+    await get_next()
+        .then(process)
+        .then(submit)
+        .then((r)=>console.log("done",r))
+}
+start().then(()=>console.log("food"))
+// test_screenshots().then(()=>console.log("food"))
 
 
