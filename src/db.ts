@@ -1,7 +1,21 @@
-import {gen_id, gen_path, getFiles} from "./util.js";
+import {gen_id, gen_path, getFiles, make_logger} from "./util.js";
 import fs from "fs";
 import path from "path";
 
+
+const log = make_logger("DB")
+export type Uuid = string
+export type AttachmentForm = "local_file_path" | "base64encoded"
+export type ValueType = "attachment"
+// @ts-ignore
+export type MimeType = "image/png" | "image/pdf"
+
+export type Attachment = {
+    type:ValueType,
+    form:AttachmentForm,
+    mime_type:MimeType
+    data:any,
+}
 
 type Item = {
     id:string,
@@ -61,24 +75,22 @@ export class DB {
             supersedes: obj.original,
             data: {
                 status: 'processed',
-                url: obj.url,
-                title: obj.title,
-                byline: obj.byline,
-                excerpt: obj.excerpt,
-                siteName: obj.siteName,
             }
         }
+        Object.keys(obj.data).forEach(k => {
+            item.data[k] = obj.data[k]
+        })
         if(item.supersedes) {
             this.handle_supersedes(item)
         }
         if(this.use_disk) {
-            console.log("final obj to store", item)
+            log.info("final obj to store", item)
             let pth = gen_path(item.created)
             let dir_path = path.resolve(path.join(this.root_dir, pth))
             await fs.promises.mkdir(dir_path, {recursive: true})
             let file_path = path.join(dir_path, item.id + '.json')
             await fs.promises.writeFile(file_path, JSON.stringify(item))
-            console.info("wrote file", file_path)
+            log.info("wrote file", file_path)
         }
         this.items.push(item)
     }
@@ -119,17 +131,24 @@ export class DB {
         })
     }
     private handle_supersedes(item: Item) {
-        console.log("this item supersedes",item)
-        console.log("original", this.items.filter(it => it.id === item.supersedes))
         let possibly_orig = this.items.filter(it => it.id === item.supersedes)
         if(possibly_orig.length < 1) {
             console.error(`trying to supersede ${item.supersedes} but couldn't find the original`)
             return `cannot find original ${item.supersedes}`
         } else {
-            console.log("removing the original")
             this.items = this.items.filter(it => it.id !== item.supersedes)
             return `removed the origin ${item.supersedes}`
         }
+    }
+
+    async get_attachment(id:string, name:string):Promise<any> {
+        log.info("looking up attachment",id,'name',name)
+        let item = this.items.filter(it => it.id === id)
+        if(item.length < 0) return null
+        log.info("item is",item[0])
+        let att = item[0].data[name]
+        log.info("attachment",att)
+        return att
     }
 }
 export async function load_db(root, PORT:number, use_disk: boolean) {

@@ -1,7 +1,6 @@
 import {load_db} from "./db.js";
-import {json_get, json_post, Logger, make_logger, mkdir} from "./util.js";
+import {json_get, json_post, Logger, make_logger, mkdir, rmdir} from "./util.js";
 import {ServerSettings, start_server} from "./server.js";
-import fs from "fs";
 
 const log:Logger = make_logger()
 
@@ -42,13 +41,10 @@ async function test_db() {
     console.log("done with the test")
 }
 
-async function rmdir(dir: string) {
-    await fs.promises.rmdir(dir, {recursive:true})
-}
-
 async function test_server() {
     let settings:ServerSettings = {
-        authcode: "testauth"
+        authcode: "testauth",
+        port: PORT,
     }
     log.info("testing the server")
     let db = await load_db(DB_ROOT,PORT,true)

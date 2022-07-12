@@ -33,18 +33,16 @@ https://arstechnica.com/gadgets/2022/07/first-risc-v-laptop-expected-to-ship-in-
 */
 import {Readability} from "@mozilla/readability"
 import {JSDOM} from "jsdom"
-import fetch from "node-fetch"
 import puppeteer from "puppeteer"
 import {
-    file_readable,
     json_get,
     json_post,
     Logger,
     make_logger,
     mkdir,
-    read_json_file
 } from "./util.js";
 import {ServerSettings} from "./server";
+import {Attachment} from "./db.js";
 
 const SCREENSHOT_DIR = "images"
 const TEST_URLS = [
@@ -92,12 +90,33 @@ async function generate_screenshot(url) {
     })
     let pat = /\ |\:|\/|\./ig;
     let file_name = url.replace(pat,"_")
+    const pdf:Attachment = {
+        type: "attachment",
+        form: "local_file_path",
+        mime_type: "image/pdf",
+        data: {
+            filepath: `images/page_${file_name}.pdf.pdf`,
+        }
+    }
     await page.goto(url);
-    await page.pdf({ path: `images/page_${file_name}.pdf.pdf`, format: 'letter' });
-    await page.screenshot({path: `images/page_${file_name}.thumb.png`})
+    await page.pdf({ path: pdf.data.filepath, format: 'letter' });
+    const thumb:Attachment = {
+        type: "attachment",
+        form: "local_file_path",
+        mime_type: "image/png",
+        data: {
+            filepath: `images/page_${file_name}.thumb.png`
+        }
+    }
+
+    await page.screenshot({path: thumb.data.filepath })
     // await page.screenshot({path: `images/page_${u}.png`, fullPage:true});
     await browser.close();
     log.info("scanned",url)
+    return {
+        pdf:pdf,
+        thumb:thumb,
+    }
 }
 async function test_screenshots() {
     log.info("testing urls")
@@ -110,39 +129,34 @@ async function test_screenshots() {
     }
 }
 
-function get_next() {
-    return json_get('http://localhost:3000/bookmarks/queue').then((d:any) => {
-        log.info("got the doc back",d)
-        if(d && d.data && d.data.length > 0) {
-            log.info(d.data.map(i => i.data.url))
-            log.info("first element",d.data[0])
-            return d.data[0]
-        }
+function get_next(settings:ServerSettings) {
+    return json_get(`http://localhost:${settings.port}/bookmarks/queue`).then((d:any) => {
+        if(d && d.data && d.data.length > 0) return d.data[0]
     })
 }
-function process(item) {
-    log.info("processing",item)
-    return JSDOM.fromURL(item.data.url).then(dom => {
-        // console.log("dom is", dom.window.document)
+async function process(item) {
+    try {
+        log.info("processing", item)
+        let dom = await JSDOM.fromURL(item.data.url)
         let reader = new Readability(dom.window.document)
         let article = reader.parse()
-        log.info("url", item.data.url)
-        // console.log("article",article)
-        log.info("title", article.title)
-        log.info("byline", article.byline)
-        console.log("excerpt", article.excerpt)
-        console.log("site name", article.siteName)
-        console.log("content", article.content.substring(0, 1000))
+        let scan = await generate_screenshot(item.data.url)
         return {
-            original:item.id,
-            url:item.data.url,
-            title:article.title,
-            byline:article.byline,
-            excerpt:article.excerpt,
-            siteName:article.siteName,
-            success:true,
+            original: item.id,
+            success: true,
+            data: {
+                url: item.data.url,
+                title: article.title,
+                byline: article.byline,
+                excerpt: article.excerpt,
+                siteName: article.siteName,
+                // @ts-ignore
+                pdf:scan.pdf,
+                // @ts-ignore
+                thumb:scan.thumb,
+            }
         }
-    }).catch(e => {
+    } catch (e) {
         log.error(e)
         return {
             original:item.id,
@@ -150,28 +164,20 @@ function process(item) {
             success:false,
             message:e?e.toString():'unknown error',
         }
-    })
+    }
 }
 
-type ProcessorSettings = {
-    authcode:string
-}
-function submit(it, settings:ProcessorSettings) {
+function submit(it, settings:ServerSettings) {
     it.authcode = settings.authcode
     log.info("sending back item",it)
-    return json_post('http://localhost:3000/submit/processed-bookmark',it)
+    return json_post(`http://localhost:${settings.port}/submit/processed-bookmark`,it)
 }
 
-export async function start_processor() {
-    const SETTINGS = "./settings.json"
-    if (! await file_readable(SETTINGS)) {
-        return console.error(`file "${SETTINGS} not found!"`)
-    }
-    const settings = await read_json_file(SETTINGS) as ServerSettings
+export async function run_processor(settings: ServerSettings) {
     console.info("settings are",settings)
     await mkdir(SCREENSHOT_DIR)
 
-    let item = await get_next()
+    let item = await get_next(settings)
     log.info('next doc',item)
     if(item) {
         let data = await process(item)

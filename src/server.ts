@@ -20,8 +20,12 @@ First version of url capture db. Blog with before and after notes. Also .md in t
 import express from "express"
 import {DB} from "./db.js";
 import {Server} from "http";
+import {make_logger} from "./util.js";
+import path from "path";
 
+const log = make_logger()
 export type ServerSettings = {
+    port:number,
     authcode:string
 }
 
@@ -37,12 +41,12 @@ export async function start_server(db: DB, PORT: number, settings: ServerSetting
     }
 
     async function save_url(url) {
-        db.save_unprocessed(url)
+        await db.save_unprocessed(url)
         return "all good"
     }
 
     async function save_processed_url(obj) {
-        db.save_processed(obj)
+        await db.save_processed(obj)
         return "all good"
     }
 
@@ -53,6 +57,14 @@ export async function start_server(db: DB, PORT: number, settings: ServerSetting
     async function search_processed() {
         return db.search_processed()
     }
+
+    app.get(`/bookmark/:id/attachment/:name`,(req,res) => {
+        log.info("requested attachment",req.body, req.params)
+        if(!req.params || !req.params.id || !req.params.name) return fail(res, 'missing parameters')
+        db.get_attachment(req.params.id,req.params.name)
+            .then((att) => res.sendFile(path.resolve(att.data.filepath)))
+            .catch((e:Error) => res.json({status:'error', message: e.toString()}))
+    });
 
     app.post('/submit/bookmark', (req, res) => {
         if (req.body.authcode !== settings.authcode) return fail(res, 'bad auth code')

@@ -83,27 +83,31 @@ export interface Logger {
 }
 
 class ConsoleLogger implements Logger {
+    prefix:string
+    constructor(prefix:string) {
+        this.prefix = prefix
+    }
     error(...args: any[]) {
-        console.error("ERROR", ...args)
+        console.error(`${this.prefix}:ERROR`, ...args)
     }
 
     info(...args: any[]) {
-        console.info("INFO", ...args)
+        console.info(`${this.prefix}:INFO`, ...args)
     }
 
     warn(...args: any[]) {
-        console.warn("WARN", ...args)
+        console.warn(`${this.prefix}:WARN`, ...args)
     }
 
     assert(cond: boolean, msg: string): void {
         assert(cond,msg)
-        console.log("ASSERT",msg)
+        console.log(`${this.prefix}:ASSERT`,msg)
     }
 
 }
 
-export function make_logger(): Logger {
-    return new ConsoleLogger()
+export function make_logger(prefix?:string): Logger {
+    return new ConsoleLogger(prefix?prefix:"")
 }
 
 
@@ -124,4 +128,8 @@ export function sleep(sec: number): Promise<void> {
     return new Promise((res, rej) => {
         setTimeout(() => res(), Math.floor(sec * 1000))
     })
+}
+
+export async function rmdir(dir: string) {
+    await fs.promises.rmdir(dir, {recursive: true})
 }
