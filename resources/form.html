@@ -55,16 +55,27 @@
         // result.data.sort((a,b)=>a.data.created - b.data.created)
         let html = result.data.map(item => {
             console.log("item is",item.data)
+            let pdf_link = ""
+            if(item.data.pdf) {
+                pdf_link = `<a href="../../bookmark/${item.id}/attachment/pdf">full page (pdf)</a>`
+            }
+            let thumb = ""
+            if(item.data.thumb) {
+                thumb = `<a href="../../bookmark/${item.id}/attachment/thumb">
+                    <img src="../../bookmark/${item.id}/attachment/thumb" width="256"/></a>`
+            }
             if(item.data.title) {
                 return `<li>
                         <a href="${item.data.url}">${item.data.title}</a>
                         <p>${item.data.excerpt?item.data.excerpt:"no excerpt"}</p>
+                        <p>${pdf_link}</p>
+                        <p>${thumb}</p>
                         </li>`
             } else {
                 return `<li><a href='${item.data.url}' target="_blank">${item.data.url}</a></li>`
             }
         }).join("\n")
-        console.log("html is",html)
+        // console.log("html is",html)
         target.innerHTML = html
     }
     on($("#load"),'click',() => {
