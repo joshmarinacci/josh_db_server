@@ -17,12 +17,14 @@ async function test_db() {
     await db.save_unprocessed("http://www.google.com/")
 
     //     search for unprocessed url item, confirm it's there.
-    console.assert(db.search_unprocessed().length === 1)
+    let ress = await db.search_unprocessed()
+    console.assert(ress.length === 1)
 
     let orig = db.search_unprocessed()[0]
 
     // confirm there's nothing processed yet
-    console.assert(db.search_processed().length === 0)
+    let proced = await db.search_processed()
+    console.assert(proced.length === 0)
     //     create processed url item, persist to disk
     await db.save_processed({
         original:orig.id,
@@ -32,11 +34,12 @@ async function test_db() {
     })
 
     //     search for processed url item, confirm it's there.
-    console.assert(db.search_processed().length === 1,'one processed')
+    let proced2 = await db.search_processed()
+    console.assert(proced2.length === 1,'one processed')
     //     search for unprocessed url, confirm it's superseded by the processed one
-    let items = db.search_unprocessed()
+    let items = await db.search_unprocessed()
     console.log("unprocessed items",items)
-    console.assert(db.search_unprocessed().length === 0, 'no unprocessed')
+    console.assert(items.length === 0, 'no unprocessed')
 
     console.log("done with the test")
 }

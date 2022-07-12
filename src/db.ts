@@ -44,7 +44,7 @@ export class DB {
 
     }
 
-    search_unprocessed():Item[] {
+    async search_unprocessed():Promise<Item[]> {
         return this.items.filter(item => {
             if(item.type === 'bookmark') {
                 if(item.data.status === 'unprocessed') {
@@ -55,7 +55,7 @@ export class DB {
         })
     }
 
-    search_processed() {
+    async search_processed():Promise<Item[]> {
         return this.items.filter(item => {
             if (item.type === 'bookmark') {
                 if (item.data.status === 'processed') {
