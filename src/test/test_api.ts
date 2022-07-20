@@ -3,7 +3,7 @@ import {make_logger} from "../util.js";
 import {InMemoryDB} from "../memory_db.js";
 import {DiskDB} from "../disk_db.js";
 import {RPCClient} from "../rpc_proxy.js";
-import {SimpleDBServer} from "../simple_server.js";
+import {SimpleDBServer, SimpleServerSettings} from "../simple_server.js";
 
 
 const log = make_logger("TEST_API")
@@ -86,12 +86,18 @@ async function disk_test() {
 async function rpc_test() {
     let db = new InMemoryDB()
     let db_api = await db.connect()
-    let server = new SimpleDBServer(8008, db_api)
+    let settings:SimpleServerSettings = {
+        users: [{
+            name:"josh",
+            pass:"pass"
+        }]
+    }
+    let server = new SimpleDBServer(8008, db_api, settings)
     await server.start()
     let rpc = new RPCClient()
     let api: DBObjAPI = await rpc.connect(
         "http://localhost:8008",
-        {type:'userpass',username:"josh",password:'somepassword'}
+        {type:'userpass',username:"josh",password:'pass'}
     )
     try {
         await run_bookmark_test(api)

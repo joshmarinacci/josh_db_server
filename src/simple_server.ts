@@ -6,17 +6,42 @@ import {DBObjAPI} from "./api.js";
 const log = make_logger()
 const fail = e => log.error(e)
 
+export type UserSettings = {
+    name:string,
+    pass:string
+}
+export type SimpleServerSettings = {
+    users:UserSettings[],
+}
 export class SimpleDBServer {
     private app: Express;
     private server: http.Server;
     private port: number;
     private db: DBObjAPI;
+    private settings: SimpleServerSettings;
 
-    constructor(port: number, db: DBObjAPI) {
+    constructor(port: number, db: DBObjAPI, settings:SimpleServerSettings) {
+        this.settings = settings
         this.db = db
         this.port = port
         this.app = express()
         this.app.use(express.json())
+        this.app.use((req,res,next)=>{
+            log.info("doing auth",req.headers)
+            if(!req.headers['db-username']) {
+                log.warn("missing db-username")
+                return res.json({success:false, message:"bad auth"})
+            }
+            let username = req.headers['db-username']
+            log.info("got username",username)
+            let password = req.headers['db-password']
+            log.info("got password",password)
+            let user = this.settings.users.find(u => u.name === username && u.pass === password)
+            if(!user) return res.json({success:false, message:"bad auth"})
+            // @ts-ignore
+            req.user = user
+            next()
+        })
         this.app.get('/status', (req, res) => {
             log.info("/status called")
             res.json({success:true,message:"auth-good"})
