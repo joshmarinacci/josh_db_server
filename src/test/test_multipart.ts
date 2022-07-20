@@ -3,10 +3,10 @@ Post JSON with encoded attachments and mime types. DB will convert them to attac
  */
 
 //post json blob + n files from disk. can we just use filepaths instead for now?
-import {json_get, json_post, make_logger, mkdir, rmdir, sleep} from "./util.js";
-import {ServerSettings, start_server} from "./server.js";
-import {Attachment, AttachmentForm, load_db, Uuid, ValueType, MimeType} from "./db.js";
-import {run_processor} from "./process.js";
+import {json_get, json_post, make_logger, mkdir, rmdir, sleep} from "../util.js";
+import {ServerSettings, start_server} from "../server.js";
+import {Attachment, AttachmentForm, load_db, Uuid, ValueType, MimeType} from "../db.js";
+import {run_processor} from "../process.js";
 import fetch, {Response} from "node-fetch"
 import fs, {createWriteStream} from "fs";
 import pipe_to from "promisified-pipe"
@@ -38,7 +38,7 @@ type GenericObject = {
 /*
 let obj:GenericObject = {
     id: "id1",
-    created: new Date(),
+    created_date: new Date(),
     type: "bookmark",
     supersedes: "id2",
     tags: [],

@@ -52,7 +52,7 @@
     function render_bookmarks(target,result) {
         console.log("data is",result)
         console.log("item count",result.data.length)
-        // result.data.sort((a,b)=>a.data.created - b.data.created)
+        // result.data.sort((a,b)=>a.data.created_date - b.data.created_date)
         let html = result.data.map(item => {
             console.log("item is",item.data)
             let pdf_link = ""

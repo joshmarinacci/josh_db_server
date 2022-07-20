@@ -12,7 +12,7 @@
     const $ = (sel) => document.querySelector(sel)
     const on = (el,type,cb) => el.addEventListener(type,cb)
     function render_bookmarks(result) {
-        // result.data.sort((a,b)=>a.data.created - b.data.created)
+        // result.data.sort((a,b)=>a.data.created_date - b.data.created_date)
         let html = result.data.map(item => {
             console.log("item is",item.data)
             return `<li><a href='${item.data.url}' target="_blank">${item.data.url}</a></li>`
