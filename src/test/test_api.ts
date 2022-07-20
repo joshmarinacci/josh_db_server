@@ -110,10 +110,67 @@ async function rpc_test() {
     await db.shutdown()
 }
 
+async function persistence_test() {
+    let settings:SimpleServerSettings = {
+        users: [{
+            name:"josh",
+            pass:"pass"
+        }]
+    }
+    let rootdir = "persistence"
+
+    let db = new DiskDB(rootdir,false)
+    let db_api = await db.connect()
+    let server = new SimpleDBServer(8008, db_api, settings)
+    await server.start()
+    let rpc = new RPCClient()
+    let api: DBObjAPI = await rpc.connect(
+        "http://localhost:8008",
+        {type:'userpass',username:"josh",password:'pass'}
+    )
+    try {
+        //make an object
+        let data = {
+            type: 'bookmark',
+            data: {
+                status: 'unprocessed',
+                url: 'https://vr.josh.earth/',
+            }
+        }
+        {
+            let ret = await api.create(data)
+            log.assert(ret.success, "created_date okay")
+        }
+
+        //restart everything
+        await db.shutdown()
+        await server.shutdown()
+        log.info("shutdown the database and server")
+        db = new DiskDB(rootdir,true)
+        db_api = await db.connect()
+        server = new SimpleDBServer(8008, db_api, settings)
+        await server.start()
+        log.info("restarted everything")
+        {
+            //see if the object is still there?
+            let ret = await api.search({data:{status:'unprocessed'}})
+            log.assert(ret.success,'search was successful')
+            log.assert(ret.data.length===1,'found one item')
+        }
+    } catch (e) {
+        log.error(e)
+    }
+    await rpc.shutdown()
+    await server.shutdown()
+    await db.shutdown()
+
+}
+
 console.log("running")
 Promise.resolve(null)
     // .then(inmemory_test)
     // .then(disk_test)
-    .then(rpc_test)
+    // .then(rpc_test)
+    .then(persistence_test)
     .then(()=>console.log("done"))
     .catch(e => console.error(e))

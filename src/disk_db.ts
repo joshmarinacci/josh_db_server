@@ -1,5 +1,5 @@
 import {DBID, DBObj, DBObjAPI, Status} from "./api.js";
-import {gen_id, gen_path, make_logger, mkdir, rmdir} from "./util.js";
+import {gen_id, gen_path, getFiles, make_logger, mkdir, rmdir} from "./util.js";
 import path from "path";
 import {promises as fs} from "fs"
 
@@ -24,6 +24,14 @@ export class DiskDB implements DBObjAPI {
 
     async connect() {
         await mkdir(this.rootdir)
+        await getFiles(this.rootdir, async (f) => {
+            log.info("reading", f)
+            let buf = await fs.readFile(f);
+            let item = JSON.parse(buf.toString())
+            log.info("loaded", item.id)
+            this.insert_from_disk(item)
+        })
+
         return Promise.resolve(this)
     }
 
@@ -40,7 +48,6 @@ export class DiskDB implements DBObjAPI {
             success:true,
             data:[],
         }
-        //throw  new Error("not implemented")
     }
 
     async create(obj: object): Promise<Status> {
@@ -141,5 +148,9 @@ export class DiskDB implements DBObjAPI {
         this.data.push(item)
         log.info("pushed it")
         return item
+    }
+
+    private insert_from_disk(item: DBObj) {
+        this.data.push(item)
     }
 }
