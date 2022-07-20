@@ -27,15 +27,15 @@ export class SimpleDBServer {
         this.app = express()
         this.app.use(express.json())
         this.app.use((req,res,next)=>{
-            log.info("doing auth",req.headers)
+            // log.info("doing auth",req.headers)
             if(!req.headers['db-username']) {
                 log.warn("missing db-username")
                 return res.json({success:false, message:"bad auth"})
             }
             let username = req.headers['db-username']
-            log.info("got username",username)
+            // log.info("got username",username)
             let password = req.headers['db-password']
-            log.info("got password",password)
+            // log.info("got password",password)
             let user = this.settings.users.find(u => u.name === username && u.pass === password)
             if(!user) return res.json({success:false, message:"bad auth"})
             // @ts-ignore
@@ -43,23 +43,23 @@ export class SimpleDBServer {
             next()
         })
         this.app.get('/status', (req, res) => {
-            log.info("/status called")
+            // log.info("/status called")
             res.json({success:true,message:"auth-good"})
         })
         this.app.post('/create',(req,res)=>{
-            log.info("/create",req.body)
+            // log.info("/create",req.body)
             db.create(req.body).then(s => res.json(s)).catch(fail)
         })
         this.app.post('/search',(req,res)=>{
-            log.info("/search",req.body)
+            // log.info("/search",req.body)
             db.search(req.body).then(s => res.json(s)).catch(fail)
         })
         this.app.post('/replace',(req,res)=>{
-            log.info("/replace",req.body)
+            // log.info("/replace",req.body)
             db.replace(req.body.old,req.body.replacement).then(s => res.json(s)).catch(fail)
         })
         this.app.post('/archive',(req,res)=>{
-            log.info("/archive",req.body)
+            // log.info("/archive",req.body)
             db.archive(req.body).then(s => res.json(s)).catch(fail)
         })
     }

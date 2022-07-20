@@ -12,17 +12,17 @@ export class RPCClient implements DBObjAPI {
         this.base = base
         this.auth = auth
         let json = await this.json_get(base+'/status')
-        log.info("response from status is",json)
+        // log.info("response from status is",json)
         return this
     }
     async create(data: object): Promise<Status> {
         let json = await this.json_post(this.base+'/create',data)
-        log.info("received back",json)
+        // log.info("received back",json)
         return json as Status
     }
     async search(query: any): Promise<Status> {
         let json = await this.json_post(this.base+'/search',query)
-        log.info("received back",json)
+        // log.info("received back",json)
         return json as Status
     }
     async replace(old: DBObj, replacement: object): Promise<Status> {
@@ -30,12 +30,12 @@ export class RPCClient implements DBObjAPI {
             old:old,
             replacement:replacement
         })
-        log.info("received back",json)
+        // log.info("received back",json)
         return json as Status
     }
     async archive(obj: DBObj): Promise<Status> {
         let json = await this.json_post(this.base+'/archive',obj)
-        log.info("received back",json)
+        // log.info("received back",json)
         return json as Status
     }
     get_by_id(id: DBID): Promise<Status> {

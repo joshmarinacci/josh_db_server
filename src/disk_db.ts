@@ -14,13 +14,15 @@ export type AuthSettings = {
 export class DiskDB implements DBObjAPI {
     data: DBObj[]
     private rootdir: string;
+    private delete_on_shutdown:boolean
 
-    constructor(rootdir: string) {
+    constructor(rootdir: string, delete_on_shutdown:boolean) {
         this.rootdir = rootdir
         this.data = []
+        this.delete_on_shutdown = delete_on_shutdown
     }
 
-    async connect(auth: AuthSettings) {
+    async connect() {
         await mkdir(this.rootdir)
         return Promise.resolve(this)
     }
@@ -122,8 +124,10 @@ export class DiskDB implements DBObjAPI {
     }
 
     async shutdown() {
-        await rmdir(this.rootdir)
-        log.info("nuked dir",this.rootdir)
+        if(this.delete_on_shutdown) {
+            await rmdir(this.rootdir)
+            log.info("nuked dir", this.rootdir)
+        }
     }
 
     private async _save(item: DBObj):Promise<DBObj> {

@@ -72,8 +72,8 @@ async function run_bookmark_test(api: DBObjAPI) {
 }
 
 async function disk_test() {
-    let db = new DiskDB("./test-db-disk")
-    let api: DBObjAPI = await db.connect({type:'userpass',username:"josh",password:'somepassword'})
+    let db = new DiskDB("./test-db-disk",true)
+    let api: DBObjAPI = await db.connect()
     try {
         await run_bookmark_test(api)
     } catch (e) {
@@ -84,7 +84,8 @@ async function disk_test() {
 
 
 async function rpc_test() {
-    let db = new InMemoryDB()
+    let rootdir = "crazy_db"
+    let db = new DiskDB(rootdir,true)
     let db_api = await db.connect()
     let settings:SimpleServerSettings = {
         users: [{
