@@ -42,6 +42,7 @@ export class RPCClient implements DBObjAPI {
     }
 
     private async json_get(url: string) {
+        // log.info(`json_get "${url}"`)
         let res = await fetch(url,{
             method:'GET',
             headers:{

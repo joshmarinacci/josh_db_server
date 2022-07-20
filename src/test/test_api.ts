@@ -88,6 +88,9 @@ async function rpc_test() {
     let settings:SimpleServerSettings = {
         port:8008,
         rootdir:'crazy_db',
+        apipath:"/api",
+        staticpath:"static/",
+        staticdir:"static-dir/",
         users: [{
             name:"josh",
             pass:"pass"
@@ -99,7 +102,7 @@ async function rpc_test() {
     await server.start()
     let rpc = new RPCClient()
     let api: DBObjAPI = await rpc.connect(
-        "http://localhost:8008",
+        `http://localhost:8008${settings.apipath}`,
         {type:'userpass',username:"josh",password:'pass'}
     )
     try {
@@ -116,6 +119,9 @@ async function persistence_test() {
     let settings:SimpleServerSettings = {
         port: 8008,
         rootdir: "persistence",
+        apipath:"api/",
+        staticpath:"static/",
+        staticdir:"static-dir/",
         users: [{
             name:"josh",
             pass:"pass"
@@ -171,6 +177,9 @@ async function persistence_test() {
 
 async function processing_test() {
     let settings:SimpleServerSettings = {
+        apipath:"api/",
+        staticpath:"static/",
+        staticdir:"static-dir/",
         port: 8008,
         rootdir: "processing_db",
         users: [{
@@ -220,7 +229,7 @@ async function processing_test() {
             //confirm one processed
             let ret = await api.search({data:{status:'processed'}})
             log.assert(ret.data.length===1,'one processed')
-            // log.info("the final processed item is",ret)
+            log.info("the final processed item is",ret)
         }
 
     } catch (e) {
