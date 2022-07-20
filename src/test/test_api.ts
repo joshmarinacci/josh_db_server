@@ -2,6 +2,8 @@ import {DBObjAPI} from "../api";
 import {make_logger} from "../util.js";
 import {InMemoryDB} from "../memory_db.js";
 import {DiskDB} from "../disk_db.js";
+import {RPCClient} from "../rpc_proxy.js";
+import {SimpleDBServer} from "../simple_server.js";
 
 
 const log = make_logger("TEST_API")
@@ -80,9 +82,31 @@ async function disk_test() {
     await db.shutdown()
 }
 
+
+async function rpc_test() {
+    let db = new InMemoryDB()
+    let db_api = await db.connect()
+    let server = new SimpleDBServer(8008, db_api)
+    await server.start()
+    let rpc = new RPCClient()
+    let api: DBObjAPI = await rpc.connect(
+        "http://localhost:8008",
+        {type:'userpass',username:"josh",password:'somepassword'}
+    )
+    try {
+        await run_bookmark_test(api)
+    } catch (e) {
+        log.error(e)
+    }
+    await rpc.shutdown()
+    await server.shutdown()
+    await db.shutdown()
+}
+
 console.log("running")
 Promise.resolve(null)
     // .then(inmemory_test)
-    .then(disk_test)
+    // .then(disk_test)
+    .then(rpc_test)
     .then(()=>console.log("done"))
     .catch(e => console.error(e))
