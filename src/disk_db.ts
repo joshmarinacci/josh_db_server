@@ -87,7 +87,7 @@ export class DiskDB implements DBObjAPI {
             data: replacement.data,
             archived:false,
         }
-        log.info("replacement is", new_rep)
+        // log.info("replacement is", new_rep)
         await this._save(new_rep)
         // get rid of the old
         this.data = this.data.filter(o => o.id !== old.id)
@@ -117,7 +117,7 @@ export class DiskDB implements DBObjAPI {
                 }
                 return passed
             })
-            log.info("final results are",res)
+            // log.info("final results are",res)
             return Promise.resolve({
                 success: true,
                 data: res

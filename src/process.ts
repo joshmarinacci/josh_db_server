@@ -8,10 +8,9 @@ import {
     make_logger,
     mkdir,
 } from "./util.js";
-// import {ServerSettings} from "./server";
-// import {Attachment} from "./db.js";
 import {SimpleServerSettings} from "./simple_server.js";
-import {Attachment} from "./db";
+import {Attachment} from "./db.js";
+import {DBObj, DBObjAPI} from "./api";
 
 const SCREENSHOT_DIR = "images"
 const TEST_URLS = [
@@ -93,12 +92,11 @@ async function test_screenshots() {
     }
 }
 
-function get_next(settings:SimpleServerSettings) {
-    return json_get(`http://localhost:${settings.port}/bookmarks/queue`).then((d:any) => {
-        if(d && d.data && d.data.length > 0) return d.data[0]
-    })
+async function get_next(settings: SimpleServerSettings, api: DBObjAPI):Promise<DBObj[]> {
+    let ret = await api.search({data: {status: 'unprocessed'}})
+    return ret.data
 }
-async function process(item) {
+async function process(item:DBObj) {
     try {
         log.info("processing", item)
         let dom = await JSDOM.fromURL(item.data.url)
@@ -109,6 +107,7 @@ async function process(item) {
             original: item.id,
             success: true,
             data: {
+                status:'processed',
                 url: item.data.url,
                 title: article.title,
                 byline: article.byline,
@@ -131,22 +130,22 @@ async function process(item) {
     }
 }
 
-function submit(it, settings:SimpleServerSettings) {
-    // it.authcode = settings.authcode
-    log.info("sending back item",it)
-    return json_post(`http://localhost:${settings.port}/submit/processed-bookmark`,it)
+async function submit(old: DBObj, data: any, settings: SimpleServerSettings, api: DBObjAPI) {
+    // log.info("sending back item", data)
+    return await api.replace(old, data)
+    // return json_post(`http://localhost:${settings.port}/submit/processed-bookmark`, old)
 }
 
-export async function run_processor(settings: SimpleServerSettings) {
+export async function run_processor(settings: SimpleServerSettings, api: DBObjAPI) {
     console.info("settings are",settings)
     await mkdir(SCREENSHOT_DIR)
 
-    let item = await get_next(settings)
-    log.info('next doc',item)
-    if(item) {
-        let data = await process(item)
-        log.info("data is", data)
-        await submit(data,settings)
+    let items = await get_next(settings,api)
+    log.info('next docs',items)
+    if(items.length > 0) {
+        let data = await process(items[0])
+        // log.info("data is", data)
+        await submit(items[0],data,settings,api)
     } else {
         log.info("nothing to process")
     }

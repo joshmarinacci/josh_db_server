@@ -12,7 +12,7 @@ async function start() {
             return console.error(`file "${SETTINGS} not found!"`)
         }
         const settings = await read_json_file(SETTINGS) as SimpleServerSettings
-        await run_processor(settings)
+        // await run_processor(settings, api)
         console.log("sleeping for 10 seconds")
         await sleep(10)
     }

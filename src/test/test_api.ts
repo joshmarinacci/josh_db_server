@@ -4,6 +4,7 @@ import {InMemoryDB} from "../memory_db.js";
 import {DiskDB} from "../disk_db.js";
 import {RPCClient} from "../rpc_proxy.js";
 import {SimpleDBServer, SimpleServerSettings} from "../simple_server.js";
+import {run_processor} from "../process.js";
 
 
 const log = make_logger("TEST_API")
@@ -168,11 +169,73 @@ async function persistence_test() {
 
 }
 
+async function processing_test() {
+    let settings:SimpleServerSettings = {
+        port: 8008,
+        rootdir: "processing_db",
+        users: [{
+            name:"josh",
+            pass:"pass"
+        }]
+    }
+
+    let db = new DiskDB(settings.rootdir,true)
+    let db_api = await db.connect()
+    let server = new SimpleDBServer(db_api, settings)
+    await server.start()
+    let rpc = new RPCClient()
+    let api: DBObjAPI = await rpc.connect(
+        `http://localhost:${settings.port}`,
+        {type:'userpass',username:settings.users[0].name,password:settings.users[0].pass}
+    )
+    try {
+        {
+            //submit a bookmark
+            let data = {
+                type: 'bookmark',
+                data: {
+                    status: 'unprocessed',
+                    url: 'https://vr.josh.earth/',
+                }
+            }
+            let ret = await api.create(data)
+            log.assert(ret.success, "created_date okay")
+        }
+        {
+            //confirm there is one unprocessed
+            let ret = await api.search({data:{status:'unprocessed'}})
+            log.assert(ret.success,'search was successful')
+            log.assert(ret.data.length===1,'found one item')
+        }
+        {
+            // process it
+            await run_processor(settings, api)
+        }
+        {
+            //confirm zero unprocessed
+            let ret = await api.search({data: {status: 'unprocessed'}})
+            log.assert(ret.data.length === 0, 'zero unprocessed')
+        }
+        {
+            //confirm one processed
+            let ret = await api.search({data:{status:'processed'}})
+            log.assert(ret.data.length===1,'one processed')
+            // log.info("the final processed item is",ret)
+        }
+
+    } catch (e) {
+        log.error(e)
+    }
+    await rpc.shutdown()
+    await server.shutdown()
+    await db.shutdown()
+}
 console.log("running")
 Promise.resolve(null)
     // .then(inmemory_test)
     // .then(disk_test)
     // .then(rpc_test)
-    .then(persistence_test)
+    // .then(persistence_test)
+    .then(processing_test)
     .then(()=>console.log("done"))
     .catch(e => console.error(e))

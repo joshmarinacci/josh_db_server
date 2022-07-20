@@ -110,7 +110,7 @@ async function do_test() {
         // process a single url
         {
             log.info("==========")
-            await run_processor(settings)
+            // await run_processor(settings)
             // confirm the queue is empty
             let queue = await json_get(`${BASE}bookmarks/queue`)
             log.info("queue",queue)
