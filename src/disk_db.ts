@@ -5,12 +5,6 @@ import {promises as fs} from "fs"
 
 const log = make_logger("DISK_DB")
 
-export type AuthSettings = {
-    type: "userpass" | "oauth"
-    username: string
-    password: string
-}
-
 export class DiskDB implements DBObjAPI {
     data: DBObj[]
     private rootdir: string;
@@ -69,10 +63,9 @@ export class DiskDB implements DBObjAPI {
     }
 
     async get_by_id(id: DBID): Promise<Status> {
-        let results = this.data.filter(o => o.id == id)
         return {
-          success:true,
-            data:results
+            success:true,
+            data:this.data.filter(o => o.id == id)
         }
     }
 
@@ -87,27 +80,24 @@ export class DiskDB implements DBObjAPI {
             data: replacement.data,
             archived:false,
         }
-        // log.info("replacement is", new_rep)
+        //save the new
         await this._save(new_rep)
         // get rid of the old
         this.data = this.data.filter(o => o.id !== old.id)
-        return Promise.resolve({
+        return {
             success: true,
             data: [new_rep]
-        })
+        }
     }
 
-    search(query: any): Promise<Status> {
-        log.info("searching for", query)
+    async search(query: any): Promise<Status> {
+        // log.info("searching for", query)
         if (query && query.data) {
             let q_data = query.data
-            // log.info("searching for",q_data)
             let res = this.data.filter(it => {
-                // log.info("it is",it.data)
                 let passed = true
                 if(it.archived) passed = false
                 for (let [k, v] of Object.entries(q_data)) {
-                    // log.info("key",k,'==',v)
                     if (it.data[k] === v) {
                         // log.info("passed")
                     } else {
@@ -117,17 +107,15 @@ export class DiskDB implements DBObjAPI {
                 }
                 return passed
             })
-            // log.info("final results are",res)
-            return Promise.resolve({
+            return {
                 success: true,
                 data: res
-            })
+            }
         }
-        return Promise.resolve({
+        return {
             success: false,
             data: []
-        })
-
+        }
     }
 
     async shutdown() {

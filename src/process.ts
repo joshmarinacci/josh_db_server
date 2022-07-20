@@ -2,8 +2,6 @@ import {Readability} from "@mozilla/readability"
 import {JSDOM} from "jsdom"
 import puppeteer from "puppeteer"
 import {
-    json_get,
-    json_post,
     Logger,
     make_logger,
     mkdir,
@@ -130,26 +128,18 @@ async function process(item:DBObj) {
     }
 }
 
-async function submit(old: DBObj, data: any, settings: SimpleServerSettings, api: DBObjAPI) {
-    // log.info("sending back item", data)
-    return await api.replace(old, data)
-    // return json_post(`http://localhost:${settings.port}/submit/processed-bookmark`, old)
-}
-
 export async function run_processor(settings: SimpleServerSettings, api: DBObjAPI) {
-    console.info("settings are",settings)
     await mkdir(SCREENSHOT_DIR)
 
-    let items = await get_next(settings,api)
-    log.info('next docs',items)
-    if(items.length > 0) {
-        let data = await process(items[0])
-        // log.info("data is", data)
-        await submit(items[0],data,settings,api)
+    let ret = await api.search({data: {status: 'unprocessed'}})
+    log.info('next docs',ret.data)
+    if(ret.data.length > 0) {
+        let old = ret.data[0]
+        let new_one = await process(old)
+        await api.replace(old,new_one)
     } else {
         log.info("nothing to process")
     }
-    log.info("done")
 }
 
 

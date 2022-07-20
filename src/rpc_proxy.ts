@@ -1,7 +1,12 @@
 import {DBID, DBObj, DBObjAPI, Status} from "./api.js";
-import {AuthSettings} from "./disk_db.js";
 import {make_logger} from "./util.js";
 import {default as fetch} from "node-fetch"
+
+export type AuthSettings = {
+    type: "userpass" | "oauth"
+    username: string
+    password: string
+}
 
 const log = make_logger("rpc_proxy")
 export class RPCClient implements DBObjAPI {
@@ -12,37 +17,28 @@ export class RPCClient implements DBObjAPI {
         this.base = base
         this.auth = auth
         let json = await this.json_get(base+'/status')
-        // log.info("response from status is",json)
+        log.info("response from status is",json)
         return this
     }
-    async create(data: object): Promise<Status> {
-        let json = await this.json_post(this.base+'/create',data)
-        // log.info("received back",json)
-        return json as Status
+    create(data: object): Promise<Status> {
+        return this.json_post(this.base+'/create',data)
     }
-    async search(query: any): Promise<Status> {
-        let json = await this.json_post(this.base+'/search',query)
-        // log.info("received back",json)
-        return json as Status
+    search(query: any): Promise<Status> {
+        return this.json_post(this.base+'/search',query)
     }
-    async replace(old: DBObj, replacement: object): Promise<Status> {
-        let json = await this.json_post(this.base+'/replace',{
+    replace(old: DBObj, replacement: object): Promise<Status> {
+        return this.json_post(this.base+'/replace',{
             old:old,
             replacement:replacement
         })
-        // log.info("received back",json)
-        return json as Status
     }
-    async archive(obj: DBObj): Promise<Status> {
-        let json = await this.json_post(this.base+'/archive',obj)
-        // log.info("received back",json)
-        return json as Status
+    archive(obj: DBObj): Promise<Status> {
+        return this.json_post(this.base + '/archive', obj)
     }
     get_by_id(id: DBID): Promise<Status> {
         throw new Error("unimplemented")
     }
     async shutdown() {
-
     }
 
     private async json_get(url: string) {
@@ -54,10 +50,10 @@ export class RPCClient implements DBObjAPI {
                 'db-password':this.auth.password,
             }
         })
-        return await res.json()
+        return await res.json() as Status
     }
 
-    private async json_post(url: string, payload: object) {
+    private async json_post(url: string, payload: object):Promise<Status> {
         let res = await fetch(url,{
             method:'POST',
             headers:{
@@ -67,6 +63,6 @@ export class RPCClient implements DBObjAPI {
             },
             body:JSON.stringify(payload),
         })
-        return await res.json()
+        return await res.json() as Status
     }
 }
