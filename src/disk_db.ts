@@ -45,6 +45,9 @@ export class DiskDB implements DBObjAPI {
     }
 
     async create(obj: object): Promise<Status> {
+        log.info("creating entry from object",obj)
+        if(!('type' in obj)) return { success:false, data:[], message:"missing 'type' property"}
+        if(!('data' in obj)) return { success:false, data:[], message:"missing 'data' property"}
         let item: DBObj = {
             // @ts-ignore
             data: obj.data,
@@ -94,6 +97,7 @@ export class DiskDB implements DBObjAPI {
         // log.info("searching for", query)
         if (query && query.data) {
             let q_data = query.data
+            // log.info("qdata",q_data)
             let res = this.data.filter(it => {
                 let passed = true
                 if(it.archived) passed = false

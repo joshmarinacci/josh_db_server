@@ -28,8 +28,10 @@ export class SimpleDBServer {
         this.settings = settings
         this.db = db
         this.app = express()
+        this.app.use(settings.staticpath,express.static(settings.staticdir))
         this.app.use(express.json())
-        this.app.use((req,res,next)=>{
+
+        const auth_check = (req,res,next) => {
             // log.info("doing auth",req.headers)
             if(!req.headers['db-username']) {
                 log.warn("missing db-username")
@@ -44,7 +46,8 @@ export class SimpleDBServer {
             // @ts-ignore
             req.user = user
             next()
-        })
+        }
+        this.app.use(auth_check)
         this.app.get(`${settings.apipath}/status`, (req, res) => {
             // log.info("/status called")
             res.json({success:true,message:"auth-good"})

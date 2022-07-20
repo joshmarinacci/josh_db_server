@@ -8,13 +8,19 @@
 <h1>Add Bookmark</h1>
 <form id="bookmark">
     <label>
-        auth code
-        <input type="text" id="authcode">
+        user
+        <input type="text" id="user" value="josh">
     </label>
     <label>
-        URL
-        <input type="text" name="url" id="url">
+        pass
+        <input type="text" id="pass" value="pass">
     </label>
+    <br/>
+    <label>
+        URL
+        <input type="text" name="url" id="url" value="https://news.ycombinator.com/">
+    </label>
+    <br/>
     <button id="save">save</button>
 </form>
 
@@ -32,20 +38,24 @@
     on($("#save"),'click',(e)=>{
         console.log("saving the form")
         let data = {
-            url: $("#url").value,
-            authcode:$("#authcode").value,
+            type:'bookmark',
+            data: {
+                status:'unprocessed',
+                url: $("#url").value,
+            }
         }
         e.preventDefault()
-        fetch('./',{
+        fetch('../api/create',{
             method:'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'db-username':'josh',
+                'db-password':'pass',
             },
             body: JSON.stringify(data),
         }).then(resp => resp.json())
             .then(res => console.log('yay',res))
             .catch(e => console.error('error',e))
-
     })
 
 
@@ -78,14 +88,22 @@
         // console.log("html is",html)
         target.innerHTML = html
     }
+
+    function do_search(query) {
+        return fetch("../api/search",{
+            method:"POST",
+            headers:{
+                'Content-Type': 'application/json',
+                'db-username':'josh',
+                'db-password':'pass',
+            },
+            body: JSON.stringify(query)
+        })
+            .then(d => d.json())
+    }
     on($("#load"),'click',() => {
-        let url = "http://localhost:3000/bookmarks/queue"
-        fetch(url)
-            .then(d => d.json())
-            .then((data)=>render_bookmarks($("#bookmarks"),data))
-        fetch("../../bookmarks/processed")
-            .then(d => d.json())
-            .then((data)=>render_bookmarks($("#processed"),data))
+        do_search({data:{status:'unprocessed'}}).then(data => render_bookmarks($("#bookmarks"),data))
+        do_search({data:{status:'processed'}}).then(data => render_bookmarks($("#processed"),data))
     })
 
 </script>
