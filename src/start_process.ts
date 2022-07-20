@@ -1,6 +1,6 @@
 import {run_processor} from "./process.js";
 import {file_readable, read_json_file, sleep} from "./util.js";
-import {ServerSettings} from "./server";
+import {SimpleServerSettings} from "./simple_server.js";
 
 const go = true
 
@@ -11,7 +11,7 @@ async function start() {
         if (! await file_readable(SETTINGS)) {
             return console.error(`file "${SETTINGS} not found!"`)
         }
-        const settings = await read_json_file(SETTINGS) as ServerSettings
+        const settings = await read_json_file(SETTINGS) as SimpleServerSettings
         await run_processor(settings)
         console.log("sleeping for 10 seconds")
         await sleep(10)

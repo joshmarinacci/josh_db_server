@@ -11,6 +11,8 @@ export type UserSettings = {
     pass:string
 }
 export type SimpleServerSettings = {
+    port:number,
+    rootdir:string,
     users:UserSettings[],
 }
 export class SimpleDBServer {
@@ -20,10 +22,10 @@ export class SimpleDBServer {
     private db: DBObjAPI;
     private settings: SimpleServerSettings;
 
-    constructor(port: number, db: DBObjAPI, settings:SimpleServerSettings) {
+    constructor(db: DBObjAPI, settings:SimpleServerSettings) {
         this.settings = settings
         this.db = db
-        this.port = port
+        this.port = settings.port
         this.app = express()
         this.app.use(express.json())
         this.app.use((req,res,next)=>{

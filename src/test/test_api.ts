@@ -84,16 +84,17 @@ async function disk_test() {
 
 
 async function rpc_test() {
-    let rootdir = "crazy_db"
-    let db = new DiskDB(rootdir,true)
-    let db_api = await db.connect()
     let settings:SimpleServerSettings = {
+        port:8008,
+        rootdir:'crazy_db',
         users: [{
             name:"josh",
             pass:"pass"
         }]
     }
-    let server = new SimpleDBServer(8008, db_api, settings)
+    let db = new DiskDB(settings.rootdir,true)
+    let db_api = await db.connect()
+    let server = new SimpleDBServer(db_api, settings)
     await server.start()
     let rpc = new RPCClient()
     let api: DBObjAPI = await rpc.connect(
@@ -112,16 +113,17 @@ async function rpc_test() {
 
 async function persistence_test() {
     let settings:SimpleServerSettings = {
+        port: 8008,
+        rootdir: "persistence",
         users: [{
             name:"josh",
             pass:"pass"
         }]
     }
-    let rootdir = "persistence"
 
-    let db = new DiskDB(rootdir,false)
+    let db = new DiskDB(settings.rootdir,false)
     let db_api = await db.connect()
-    let server = new SimpleDBServer(8008, db_api, settings)
+    let server = new SimpleDBServer(db_api, settings)
     await server.start()
     let rpc = new RPCClient()
     let api: DBObjAPI = await rpc.connect(
@@ -146,9 +148,9 @@ async function persistence_test() {
         await db.shutdown()
         await server.shutdown()
         log.info("shutdown the database and server")
-        db = new DiskDB(rootdir,true)
+        db = new DiskDB(settings.rootdir,true)
         db_api = await db.connect()
-        server = new SimpleDBServer(8008, db_api, settings)
+        server = new SimpleDBServer(db_api, settings)
         await server.start()
         log.info("restarted everything")
         {

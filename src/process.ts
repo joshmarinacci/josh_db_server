@@ -1,36 +1,3 @@
-/*
-[x] get the title of the page
-[ ] get the thumbnail image, if any
-[ ] get the last updated date
-[ ] find RSS feed
-[x] generate a screenshot using a phantom browser
-[x] at first, just fetch all to be processed
-[x] then submit finished one as status:processed and superceeds:prev_id
-[ ] then fetch all where superseded ones are stripped out for bookmarks list, only show processed ones
-[ ] fetch all where not superseded ones are the only ones included. so we only get ones that need to be processed
-[ ] maintain some sort of in-memory index that is generated at start before going live?
-
-get some test URLS
-
-google
-https://google.com/
-
-my blog
-https://joshondesign.com/
-
-a pollen count tweet
-https://twitter.com/joshmarinacci/status/1541076881293750273
-
-an economist article:
-https://www.economist.com/business/2022/07/07/private-equity-may-be-heading-for-a-fall
-
-a github project for an open source realtime backend
-https://github.com/pocketbase/pocketbase
-
-an ars technical article
-https://arstechnica.com/gadgets/2022/07/first-risc-v-laptop-expected-to-ship-in-september/
-
-*/
 import {Readability} from "@mozilla/readability"
 import {JSDOM} from "jsdom"
 import puppeteer from "puppeteer"
@@ -41,8 +8,10 @@ import {
     make_logger,
     mkdir,
 } from "./util.js";
-import {ServerSettings} from "./server";
-import {Attachment} from "./db.js";
+// import {ServerSettings} from "./server";
+// import {Attachment} from "./db.js";
+import {SimpleServerSettings} from "./simple_server.js";
+import {Attachment} from "./db";
 
 const SCREENSHOT_DIR = "images"
 const TEST_URLS = [
@@ -55,11 +24,6 @@ const TEST_URLS = [
 ]
 
 const log:Logger = make_logger()
-type Settings = {
-    authcode:string,
-}
-let settings:Settings|null = null
-
 function test() {
     Promise.all(TEST_URLS.map(url => {
         return JSDOM.fromURL(url).then(dom => {
@@ -129,7 +93,7 @@ async function test_screenshots() {
     }
 }
 
-function get_next(settings:ServerSettings) {
+function get_next(settings:SimpleServerSettings) {
     return json_get(`http://localhost:${settings.port}/bookmarks/queue`).then((d:any) => {
         if(d && d.data && d.data.length > 0) return d.data[0]
     })
@@ -167,13 +131,13 @@ async function process(item) {
     }
 }
 
-function submit(it, settings:ServerSettings) {
-    it.authcode = settings.authcode
+function submit(it, settings:SimpleServerSettings) {
+    // it.authcode = settings.authcode
     log.info("sending back item",it)
     return json_post(`http://localhost:${settings.port}/submit/processed-bookmark`,it)
 }
 
-export async function run_processor(settings: ServerSettings) {
+export async function run_processor(settings: SimpleServerSettings) {
     console.info("settings are",settings)
     await mkdir(SCREENSHOT_DIR)
 

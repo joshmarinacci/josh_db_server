@@ -8,7 +8,6 @@
     "clean": "rm -rf build",
     "start-server": "node build/start_server.js",
     "run-process": "node build/start_process.js",
-    "test-server": "tsc && node build/test_server.js ",
     "test-api": "tsc && node build/test/test_api.js"
   },
   "dependencies": {
