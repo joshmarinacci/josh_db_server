@@ -1,6 +1,6 @@
 import {DiskDB} from "./disk_db.js";
 import {SimpleDBServer, SimpleServerSettings} from "./simple_server.js";
-import {file_readable, read_json_file} from "josh_util";
+import {file_readable, read_json_file} from "josh_node_util";
 
 
 async function start() {

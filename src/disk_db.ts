@@ -5,12 +5,10 @@ import {
     DBObj,
     DBObjAPI,
     gen_id, gen_path,
-    getFiles,
     make_logger,
-    mkdir,
-    rmdir,
     Status
 } from "josh_util";
+import {getFiles, mkdir, rmdir} from "josh_node_util";
 
 const log = make_logger("DISK_DB")
 

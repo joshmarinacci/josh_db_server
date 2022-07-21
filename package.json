@@ -20,7 +20,8 @@
     "promisified-pipe": "^1.0.0",
     "puppeteer": "^15.3.2",
     "typescript": "^4.7.4",
-    "josh_util": "^0.0.2"
+    "josh_util": "^0.0.3",
+    "josh_node_util": "^0.0.1"
   },
   "keywords": [],
   "author": "josh@josh.earth",

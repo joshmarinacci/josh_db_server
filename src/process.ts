@@ -3,7 +3,8 @@ import {JSDOM} from "jsdom"
 import puppeteer from "puppeteer"
 import {SimpleServerSettings} from "./simple_server.js";
 import {Attachment} from "./db.js";
-import {DBObj, DBObjAPI, Logger, make_logger, mkdir} from "josh_util";
+import {DBObj, DBObjAPI, Logger, make_logger} from "josh_util";
+import {mkdir} from "josh_node_util";
 
 const SCREENSHOT_DIR = "images"
 const TEST_URLS = [

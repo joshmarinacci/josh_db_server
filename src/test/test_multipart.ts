@@ -8,7 +8,8 @@ import {Attachment, AttachmentForm, load_db, Uuid, ValueType, MimeType} from "..
 import fetch, {Response} from "node-fetch"
 import fs from "fs";
 import pipe_to from "promisified-pipe"
-import {json_get, json_post, make_logger, mkdir, rmdir, sleep} from "josh_util";
+import {json_get, json_post, make_logger, sleep} from "josh_util";
+import {mkdir, rmdir} from "josh_node_util";
 
 class LocalFilePathAttachment implements Attachment {
     type: ValueType;
