@@ -1,5 +1,6 @@
 import {make_logger} from "./util.js";
 import express, {Express} from "express";
+import cors from "cors"
 import * as http from "http";
 import {DBObjAPI} from "./api.js";
 import path from "path";
@@ -31,9 +32,10 @@ export class SimpleDBServer {
         this.app = express()
         this.app.use(settings.staticpath,express.static(settings.staticdir))
         this.app.use(express.json())
+        this.app.use(cors())
 
         const auth_check = (req,res,next) => {
-            // log.info("doing auth",req.headers, req.url,settings.apipath)
+            log.info("doing auth",req.headers, req.url,settings.apipath)
             //skip auth for '/get'
             if(req.url.startsWith(`${settings.apipath}/get`)) return next()
             if(!req.headers['db-username']) {
@@ -78,7 +80,7 @@ export class SimpleDBServer {
             })
         })
         this.app.post(`${settings.apipath}/create`,(req, res)=>{
-            // log.info("/create",req.body)
+            log.info("/create",req.body)
             db.create(req.body).then(s => res.json(s)).catch(fail)
         })
         this.app.post(`${settings.apipath}/search`,(req, res)=>{
