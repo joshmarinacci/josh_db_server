@@ -229,11 +229,13 @@ async function processing_test() {
             //confirm one processed
             let ret = await api.search({data:{status:'processed'}})
             log.assert(ret.data.length===1,'one processed')
-            log.info("the final processed item is",ret)
+            log.info("the final processed item is",ret.data[0])
 
             //fetch the thumbnail attachment
+            let rsp = await api.get_attachment(ret.data[0].id,"thumb") as Blob
+            log.info("got attachment",rsp, rsp.type, rsp.size)
+            log.assert(rsp.type === 'image/png',"got an image!")
 
-            // let resp = await (api as RPCClient).get_attachment("thumb")
         }
 
     } catch (e) {

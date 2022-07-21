@@ -67,8 +67,15 @@ export class RPCClient implements DBObjAPI {
         return await res.json() as Status
     }
 
-    async get_attachment(thumb: string) {
-        // let url = base+'/attachment/')
-        // let res = await fetch()
+    async get_attachment(id:DBID, name: string):Promise<any> {
+        let url = `${this.base}/get/${id}/attachment/${name}`
+        log.info("getting url",url)
+        let res = await fetch(url,{
+            headers:{
+                'db-username':this.auth.username,
+                'db-password':this.auth.password,
+            }
+        }).then(d => d.blob())
+        return res
     }
 }

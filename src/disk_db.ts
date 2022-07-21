@@ -16,6 +16,10 @@ export class DiskDB implements DBObjAPI {
         this.delete_on_shutdown = delete_on_shutdown
     }
 
+    get_attachment(id: string, attachment: string):Promise<any> {
+        throw new Error("Method not implemented.");
+    }
+
     async connect() {
         await mkdir(this.rootdir)
         await getFiles(this.rootdir, async (f) => {

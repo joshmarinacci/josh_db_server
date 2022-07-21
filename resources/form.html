@@ -67,12 +67,13 @@
             console.log("item is",item.data)
             let pdf_link = ""
             if(item.data.pdf) {
-                pdf_link = `<a href="../../bookmark/${item.id}/attachment/pdf">full page (pdf)</a>`
+                pdf_link = `<a href="../api/get/${item.id}/attachment/pdf">full page (pdf)</a>`
             }
             let thumb = ""
             if(item.data.thumb) {
-                thumb = `<a href="../../bookmark/${item.id}/attachment/thumb">
-                    <img src="../../bookmark/${item.id}/attachment/thumb" width="256"/></a>`
+                let thumb_url = `../api/get/${item.id}/attachment/thumb`
+                console.log("thumb is",thumb_url)
+                thumb = `<a href="${thumb_url}"><img src="${thumb_url}" width="256"/></a>`
             }
             if(item.data.title) {
                 return `<li>

@@ -22,6 +22,7 @@ export interface DBObjAPI {
     replace(old:DBObj, replacement:object):Promise<Status>
     archive(obj:DBObj):Promise<Status>
     get_by_id(id:DBID):Promise<Status>
+    get_attachment(id:DBID,attachment:string):Promise<any>,
     search(query:any):Promise<Status>
 }
 

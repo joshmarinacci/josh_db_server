@@ -105,4 +105,8 @@ export class InMemoryDB implements DBObjAPI {
     shutdown() {
         console.log("pretending to shut down")
     }
+
+    get_attachment(id: DBID, attachment: string):Promise<any> {
+        throw new Error("not implemented")
+    }
 }

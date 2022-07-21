@@ -2,6 +2,7 @@ import {make_logger} from "./util.js";
 import express, {Express} from "express";
 import * as http from "http";
 import {DBObjAPI} from "./api.js";
+import path from "path";
 
 const log = make_logger()
 const fail = e => log.error(e)
@@ -33,6 +34,8 @@ export class SimpleDBServer {
 
         const auth_check = (req,res,next) => {
             // log.info("doing auth",req.headers, req.url,settings.apipath)
+            //skip auth for '/get'
+            if(req.url.startsWith(`${settings.apipath}/get`)) return next()
             if(!req.headers['db-username']) {
                 log.warn("missing db-username")
                 return res.json({success:false, message:"bad auth"})
@@ -51,6 +54,28 @@ export class SimpleDBServer {
         this.app.get(`${settings.apipath}/status`, (req, res) => {
             // log.info("/status called")
             res.json({success:true,message:"auth-good"})
+        })
+        this.app.get(`${settings.apipath}/get/:id/attachment/:name`,(req,res) => {
+            // log.info('doing get attachment', req.params, req.query, req.body)
+            db.get_by_id(req.params.id).then(resp => {
+                if(resp.data.length < 1) {
+                    res.status(404)
+                    return res.json({success:false, message:"no such document"})
+                }
+                let doc = resp.data[0]
+                // log.info('the doc is',doc)
+                if(doc.data[req.params.name]) {
+                    let attachment = doc.data[req.params.name]
+                    // log.info("att:",attachment)
+                    if(attachment.form === 'local_file_path') {
+                        // log.info("sending",attachment)
+                        let abs = path.resolve(attachment.data.filepath)
+                        return res.sendFile(abs)
+                    }
+                }
+                res.status(404)
+                return res.json({success:false, message:"cannot render document"})
+            })
         })
         this.app.post(`${settings.apipath}/create`,(req, res)=>{
             // log.info("/create",req.body)
