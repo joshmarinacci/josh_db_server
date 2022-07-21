@@ -105,8 +105,19 @@ export class DiskDB implements DBObjAPI {
     }
 
     async search(query: any): Promise<Status> {
-        // log.info("searching for", query)
-        if (query && query.data) {
+        if(!query) return { success: false, message:"no query", data: [] }
+        log.info("searching for", query)
+
+        if('type' in query) {
+            log.info("doing a type query")
+            let results = this.data.filter(it => it.type === query.type)
+            return {
+                success: true,
+                data: results
+            }
+        }
+
+        if (query.data) {
             let q_data = query.data
             // log.info("qdata",q_data)
             let res = this.data.filter(it => {
