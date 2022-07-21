@@ -1,14 +1,9 @@
 import {Readability} from "@mozilla/readability"
 import {JSDOM} from "jsdom"
 import puppeteer from "puppeteer"
-import {
-    Logger,
-    make_logger,
-    mkdir,
-} from "./util.js";
 import {SimpleServerSettings} from "./simple_server.js";
 import {Attachment} from "./db.js";
-import {DBObj, DBObjAPI} from "./api";
+import {DBObj, DBObjAPI, Logger, make_logger, mkdir} from "josh_util";
 
 const SCREENSHOT_DIR = "images"
 const TEST_URLS = [

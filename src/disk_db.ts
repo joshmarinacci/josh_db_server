@@ -1,7 +1,16 @@
-import {DBID, DBObj, DBObjAPI, Status} from "./api.js";
-import {gen_id, gen_path, getFiles, make_logger, mkdir, rmdir} from "./util.js";
 import path from "path";
 import {promises as fs} from "fs"
+import {
+    DBID,
+    DBObj,
+    DBObjAPI,
+    gen_id, gen_path,
+    getFiles,
+    make_logger,
+    mkdir,
+    rmdir,
+    Status
+} from "josh_util";
 
 const log = make_logger("DISK_DB")
 

@@ -1,9 +1,8 @@
-import {make_logger} from "./util.js";
 import express, {Express} from "express";
 import cors from "cors"
 import * as http from "http";
-import {DBObjAPI} from "./api.js";
 import path from "path";
+import {DBObjAPI, make_logger} from "josh_util";
 
 const log = make_logger()
 const fail = e => log.error(e)

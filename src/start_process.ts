@@ -1,8 +1,6 @@
 import {run_processor} from "./process.js";
-import {file_readable, read_json_file, sleep} from "./util.js";
 import {SimpleServerSettings} from "./simple_server.js";
-import {RPCClient} from "./rpc_proxy.js";
-import {DBObjAPI} from "./api";
+import {DBObjAPI, file_readable, read_json_file, RPCClient, sleep} from "josh_util";
 
 const go = true
 

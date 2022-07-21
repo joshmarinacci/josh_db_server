@@ -1,8 +1,8 @@
 import express from "express"
 import {DB} from "./db.js";
 import {Server} from "http";
-import {make_logger} from "./util.js";
 import path from "path";
+import {make_logger} from "josh_util";
 
 const log = make_logger()
 export type ServerSettings = {

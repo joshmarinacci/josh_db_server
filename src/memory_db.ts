@@ -1,5 +1,4 @@
-import {DBID, DBObj, DBObjAPI, Status} from "./api.js";
-import {gen_id, make_logger} from "./util.js";
+import {DBID, DBObj, DBObjAPI, gen_id, make_logger, Status} from "josh_util";
 
 const log = make_logger("IN_MEMORY_DB")
 

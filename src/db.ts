@@ -1,6 +1,6 @@
-import {gen_id, gen_path, getFiles, make_logger} from "./util.js";
 import fs from "fs";
 import path from "path";
+import {gen_id, gen_path, getFiles, make_logger} from "josh_util";
 
 
 const log = make_logger("DB")

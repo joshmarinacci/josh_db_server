@@ -1,6 +1,6 @@
 import {load_db} from "../db.js";
-import {json_get, json_post, Logger, make_logger, mkdir, rmdir} from "../util.js";
 import {ServerSettings, start_server} from "../server.js";
+import {json_get, json_post, Logger, make_logger, mkdir, rmdir} from "josh_util";
 
 const log:Logger = make_logger()
 

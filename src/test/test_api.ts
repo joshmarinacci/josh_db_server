@@ -1,10 +1,8 @@
-import {DBObjAPI} from "../api";
-import {make_logger} from "../util.js";
 import {InMemoryDB} from "../memory_db.js";
 import {DiskDB} from "../disk_db.js";
-import {RPCClient} from "../rpc_proxy.js";
 import {SimpleDBServer, SimpleServerSettings} from "../simple_server.js";
 import {run_processor} from "../process.js";
+import {DBObjAPI, make_logger, RPCClient} from "josh_util";
 
 
 const log = make_logger("TEST_API")
