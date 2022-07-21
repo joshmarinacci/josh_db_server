@@ -102,7 +102,7 @@ async function rpc_test() {
     await server.start()
     let rpc = new RPCClient()
     let api: DBObjAPI = await rpc.connect(
-        `http://localhost:8008${settings.apipath}`,
+        `http://localhost:${settings.port}${settings.apipath}`,
         {type:'userpass',username:"josh",password:'pass'}
     )
     try {
@@ -119,7 +119,7 @@ async function persistence_test() {
     let settings:SimpleServerSettings = {
         port: 8008,
         rootdir: "persistence",
-        apipath:"api/",
+        apipath:"/api",
         staticpath:"static/",
         staticdir:"static-dir/",
         users: [{
@@ -134,7 +134,7 @@ async function persistence_test() {
     await server.start()
     let rpc = new RPCClient()
     let api: DBObjAPI = await rpc.connect(
-        "http://localhost:8008",
+        `http://localhost:${settings.port}${settings.apipath}`,
         {type:'userpass',username:"josh",password:'pass'}
     )
     try {
@@ -177,7 +177,7 @@ async function persistence_test() {
 
 async function processing_test() {
     let settings:SimpleServerSettings = {
-        apipath:"api/",
+        apipath:"/api",
         staticpath:"static/",
         staticdir:"static-dir/",
         port: 8008,
@@ -194,7 +194,7 @@ async function processing_test() {
     await server.start()
     let rpc = new RPCClient()
     let api: DBObjAPI = await rpc.connect(
-        `http://localhost:${settings.port}`,
+        `http://localhost:${settings.port}${settings.apipath}`,
         {type:'userpass',username:settings.users[0].name,password:settings.users[0].pass}
     )
     try {
@@ -230,6 +230,10 @@ async function processing_test() {
             let ret = await api.search({data:{status:'processed'}})
             log.assert(ret.data.length===1,'one processed')
             log.info("the final processed item is",ret)
+
+            //fetch the thumbnail attachment
+
+            // let resp = await (api as RPCClient).get_attachment("thumb")
         }
 
     } catch (e) {

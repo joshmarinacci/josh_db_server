@@ -32,7 +32,7 @@ export class SimpleDBServer {
         this.app.use(express.json())
 
         const auth_check = (req,res,next) => {
-            // log.info("doing auth",req.headers)
+            // log.info("doing auth",req.headers, req.url,settings.apipath)
             if(!req.headers['db-username']) {
                 log.warn("missing db-username")
                 return res.json({success:false, message:"bad auth"})

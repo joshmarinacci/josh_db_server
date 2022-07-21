@@ -66,4 +66,9 @@ export class RPCClient implements DBObjAPI {
         })
         return await res.json() as Status
     }
+
+    async get_attachment(thumb: string) {
+        // let url = base+'/attachment/')
+        // let res = await fetch()
+    }
 }
