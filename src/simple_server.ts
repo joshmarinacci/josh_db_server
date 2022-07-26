@@ -102,8 +102,9 @@ export class SimpleDBServer {
             db.create(data).then(s => res.json(s)).catch(fail)
         })
         this.app.post(`${settings.apipath}/create`, (req, res)=>{
-            let data = JSON.parse(req.body.data)
-            db.create(data).then(s => res.json(s)).catch(fail)
+            // log.info("/create with", req.body)
+            // let data = JSON.parse(req.body.data)
+            db.create(req.body).then(s => res.json(s)).catch(fail)
         })
         this.app.post(`${settings.apipath}/search`,(req, res)=>{
             // log.info("/search",req.body)
