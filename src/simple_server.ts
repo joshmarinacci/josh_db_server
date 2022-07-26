@@ -3,6 +3,7 @@ import cors from "cors"
 import * as http from "http";
 import path from "path";
 import {DBObjAPI, make_logger} from "josh_util";
+import multer from "multer"
 
 const log = make_logger()
 const fail = e => log.error(e)
@@ -32,9 +33,10 @@ export class SimpleDBServer {
         this.app.use(settings.staticpath,express.static(settings.staticdir))
         this.app.use(express.json())
         this.app.use(cors())
+        const upload = multer({dest:'uploads/'})
 
         const auth_check = (req,res,next) => {
-            log.info("doing auth",req.headers, req.url,settings.apipath)
+            // log.info("doing auth",req.headers, req.url,settings.apipath)
             //skip auth for '/get'
             if(req.url.startsWith(`${settings.apipath}/get`)) return next()
             if(!req.headers['db-username']) {
@@ -56,21 +58,25 @@ export class SimpleDBServer {
             // log.info("/status called")
             res.json({success:true,message:"auth-good"})
         })
+        this.app.get(`${settings.apipath}/get/:id/data`,(req,res)=>{
+            db.get_by_id(req.params.id).then(resp => res.json(resp))
+        })
         this.app.get(`${settings.apipath}/get/:id/attachment/:name`,(req,res) => {
-            // log.info('doing get attachment', req.params, req.query, req.body)
+            log.info('doing get attachment', req.params, req.query, req.body)
             db.get_by_id(req.params.id).then(resp => {
                 if(resp.data.length < 1) {
                     res.status(404)
                     return res.json({success:false, message:"no such document"})
                 }
                 let doc = resp.data[0]
-                // log.info('the doc is',doc)
-                if(doc.data[req.params.name]) {
-                    let attachment = doc.data[req.params.name]
-                    // log.info("att:",attachment)
+                log.info('the doc is',doc)
+                if(doc.attachments[req.params.name]) {
+                    let attachment = doc.attachments[req.params.name]
+                    log.info("att:",attachment)
                     if(attachment.form === 'local_file_path') {
                         // log.info("sending",attachment)
                         let abs = path.resolve(attachment.data.filepath)
+                        res.type(attachment.mime_type)
                         return res.sendFile(abs)
                     }
                 }
@@ -78,9 +84,26 @@ export class SimpleDBServer {
                 return res.json({success:false, message:"cannot render document"})
             })
         })
-        this.app.post(`${settings.apipath}/create`,(req, res)=>{
-            log.info("/create",req.body)
-            db.create(req.body).then(s => res.json(s)).catch(fail)
+        this.app.post(`${settings.apipath}/create_with_attachment`, upload.any(), (req, res)=>{
+            log.info("/create with attachment. keys",Object.keys(req.body))
+            if(req.body.data) {
+                req.body.data = JSON.parse(req.body.data)
+            }
+            let data = req.body.data
+            let atts = {}
+            // @ts-ignore
+            log.info("files is",req.files)
+            // @ts-ignore
+            req.files.forEach(file => {
+                atts[file.fieldname] = file
+            })
+            data.attachments = atts
+            // @ts-ignore
+            db.create(data).then(s => res.json(s)).catch(fail)
+        })
+        this.app.post(`${settings.apipath}/create`, (req, res)=>{
+            let data = JSON.parse(req.body.data)
+            db.create(data).then(s => res.json(s)).catch(fail)
         })
         this.app.post(`${settings.apipath}/search`,(req, res)=>{
             // log.info("/search",req.body)

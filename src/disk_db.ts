@@ -9,6 +9,7 @@ import {
     Status
 } from "josh_util";
 import {getFiles, mkdir, rmdir} from "josh_node_util";
+import {Attachment} from "./db";
 
 const log = make_logger("DISK_DB")
 
@@ -56,7 +57,6 @@ export class DiskDB implements DBObjAPI {
     }
 
     async create(obj: object): Promise<Status> {
-        log.info("creating entry from object",obj)
         if(!('type' in obj)) return { success:false, data:[], message:"missing 'type' property"}
         if(!('data' in obj)) return { success:false, data:[], message:"missing 'data' property"}
         let item: DBObj = {
@@ -66,10 +66,18 @@ export class DiskDB implements DBObjAPI {
             tags: [],
             // @ts-ignore
             type: obj.type,
-            created_date:new Date(),
-            archived:false
+            created_date: new Date(),
+            archived: false,
+            // @ts-ignore
+            attachments: obj.attachments,
         }
+        //convert attachments to files on disk
+        // console.log("item is",item)
+        await this._save_attachments(item)
+
+
         await this._save(item)
+        console.log("final item is",JSON.stringify(item,null, '   '))
         return {
             success: true,
             data: [item]
@@ -77,6 +85,7 @@ export class DiskDB implements DBObjAPI {
     }
 
     async get_by_id(id: DBID): Promise<Status> {
+        log.info("doing get by id for",id)
         return {
             success:true,
             data:this.data.filter(o => o.id == id)
@@ -93,6 +102,7 @@ export class DiskDB implements DBObjAPI {
             // @ts-ignore
             data: replacement.data,
             archived:false,
+            attachments:{}
         }
         //save the new
         await this._save(new_rep)
@@ -166,5 +176,23 @@ export class DiskDB implements DBObjAPI {
 
     private insert_from_disk(item: DBObj) {
         this.data.push(item)
+    }
+
+    private async _save_attachments(item: DBObj) {
+        log.info("saving attachments from",item)
+        for(let key in item.attachments) {
+            log.info("key is",key)
+            let att = item.attachments[key]
+            log.info("att",att)
+            let new_att:Attachment = {
+                type: "attachment",
+                form: "local_file_path",
+                mime_type: att.mimetype,
+                data: {
+                    filepath:att.path
+                },
+            }
+            item.attachments[key] = new_att
+        }
     }
 }

@@ -2,7 +2,11 @@ import {InMemoryDB} from "../memory_db.js";
 import {DiskDB} from "../disk_db.js";
 import {SimpleDBServer, SimpleServerSettings} from "../simple_server.js";
 import {run_processor} from "../process.js";
-import {DBObjAPI, make_logger, RPCClient} from "josh_util";
+import {DBObj, DBObjAPI, make_logger, RPCClient, Status} from "josh_util";
+import {FormData, File, } from "formdata-node"
+import fetch from "node-fetch"
+import fs from "fs";
+import {fileFromPath} from "formdata-node/file-from-path";
 
 
 const log = make_logger("TEST_API")
@@ -80,7 +84,6 @@ async function disk_test() {
     }
     await db.shutdown()
 }
-
 
 async function rpc_test() {
     let settings:SimpleServerSettings = {
@@ -243,12 +246,113 @@ async function processing_test() {
     await server.shutdown()
     await db.shutdown()
 }
+
+async function create_with_attachments(settings:SimpleServerSettings, data:object, attachments:object) {
+    let url = `http://localhost:${settings.port}${settings.apipath}/create_with_attachment`
+
+    let form_data = new FormData()
+    form_data.append('data',JSON.stringify(data))
+    let atts = Object.keys(attachments)
+    for(let i=0; i<atts.length; i++) {
+        let k = atts[i]
+        let filename = attachments[k]
+        log.info("attachment",k, filename)
+        // let data = await fs.promises.readFile(filename)
+        // log.info('data length is',data.length)
+        // let file =new File(data, filename,{type:'image/jpeg'})
+        // log.info("the file size is",file.size)
+        let ffp = await fileFromPath(filename,{type:'image/jpeg'})
+        log.info("ffp is",ffp.size, ffp.type)
+        form_data.set(k, ffp)
+    }
+    log.info("posting",form_data.get('thumb'))
+    let res = await fetch(url,{
+        method:'POST',
+        headers:{
+            'db-username': settings.users[0].name,
+            'db-password': settings.users[0].pass,
+        },
+        body:form_data as any,
+    })
+    return await res.json() as Status
+}
+
+async function multipart_test() {
+    let settings:SimpleServerSettings = {
+        apipath:"/api",
+        staticpath:"static/",
+        staticdir:"static-dir/",
+        port: 8008,
+        rootdir: "processing_db",
+        users: [{
+            name:"josh",
+            pass:"pass"
+        }]
+    }
+
+    let db = new DiskDB(settings.rootdir,true)
+    let db_api = await db.connect()
+    let server = new SimpleDBServer(db_api, settings)
+    await server.start()
+    let rpc = new RPCClient()
+    let api: DBObjAPI = await rpc.connect(
+        `http://localhost:${settings.port}${settings.apipath}`,
+        {type:'userpass',username:settings.users[0].name,password:settings.users[0].pass}
+    )
+    try {
+        // verify there are no entries
+        //create object using multi-part with JSON + thumbnail
+        let attachment_filepath = 'src/test/thumb.jpg'
+        let target_id = null
+        {
+            let obj = {
+                type: 'bookmark',
+                data: {
+                    status: 'unprocessed',
+                    url: 'https://vr.josh.earth/',
+                }
+            }
+            // viz-ed sends to server with a new form of create call with multi-part
+            // JSON and thumbnail are separate parameters (doc and thumb)
+            log.info("doing create")
+            let result = await create_with_attachments(settings, obj, {'thumb': attachment_filepath})
+            log.info("status is", result)
+            log.assert(result.success, "result was good")
+            target_id = result.data[0].id
+        }
+        // server saves thumb to disk at random path, creates object,
+        // adds attachment with local file type, returns status
+        // viz-ed receives status, adds docserver metadata
+        // component containing doc-id.
+        {
+            log.info("doing get by id")
+            let status = await api.get_by_id(target_id)
+            log.assert(status.data.length === 1, ' got back a single item')
+            let dbobj: DBObj = status.data[0]
+            log.info(dbobj.id === target_id, 'correct id')
+            log.info("object is",dbobj)
+            let thumb: Blob = await api.get_attachment(target_id, 'thumb')
+            log.info("blob is",thumb, thumb.size)
+            log.assert(thumb.type === 'image/jpeg', 'the thumb is correct')
+            let buf = await fs.promises.readFile(attachment_filepath);
+            log.info("buf is",buf.length)
+            log.assert(thumb.size === buf.length, 'the blog size is correct')
+        }
+
+    } catch (e) {
+        log.error(e)
+    }
+    await rpc.shutdown()
+    await server.shutdown()
+    await db.shutdown()
+}
 console.log("running")
 Promise.resolve(null)
-    .then(inmemory_test)
-    .then(disk_test)
-    .then(rpc_test)
-    .then(persistence_test)
-    .then(processing_test)
+    // .then(inmemory_test)
+    // .then(disk_test)
+    // .then(rpc_test)
+    // .then(persistence_test)
+    // .then(processing_test)
+    .then(multipart_test)
     .then(()=>console.log("done"))
     .catch(e => console.error(e))

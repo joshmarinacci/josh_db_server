@@ -30,7 +30,8 @@ export class InMemoryDB implements DBObjAPI {
             created_date:new Date(),
             // @ts-ignore
             type: obj.type,
-            archived:false
+            archived:false,
+            attachments:{},
         }
         this.data.push(item)
         return Promise.resolve({
@@ -55,7 +56,8 @@ export class InMemoryDB implements DBObjAPI {
             created_date:new Date(),
             // @ts-ignore
             data: replacement.data,
-            archived:false
+            archived:false,
+            attachments:{},
         }
         log.info("replacement is", new_rep)
 
