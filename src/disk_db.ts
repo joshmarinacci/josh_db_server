@@ -98,12 +98,15 @@ export class DiskDB implements DBObjAPI {
             type: old.type,
             tags: [],
             replaces: old.id,
-            created_date:new Date(),
+            created_date: new Date(),
             // @ts-ignore
             data: replacement.data,
-            archived:false,
-            attachments:{}
+            archived: false,
+            // @ts-ignore
+            attachments: replacement.attachments,
         }
+        //save attachments
+        await this._save_attachments(new_rep)
         //save the new
         await this._save(new_rep)
         // get rid of the old

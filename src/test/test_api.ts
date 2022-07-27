@@ -277,6 +277,39 @@ async function create_with_attachments(settings:SimpleServerSettings, data:objec
     return await res.json() as Status
 }
 
+async function replace_with_attachments(settings:SimpleServerSettings, old_data:object, data:object, attachments:object) {
+    let url = `http://localhost:${settings.port}${settings.apipath}/replace_with_attachment`
+
+    let form_data = new FormData()
+    log.info("stryihngifying ",old_data)
+    form_data.append('old',JSON.stringify(old_data))
+    log.info("stryihngifying ",data)
+    form_data.append('replacement',JSON.stringify(data))
+    let atts = Object.keys(attachments)
+    for(let i=0; i<atts.length; i++) {
+        let k = atts[i]
+        let filename = attachments[k]
+        // log.info("attachment",k, filename)
+        // let data = await fs.promises.readFile(filename)
+        // log.info('data length is',data.length)
+        // let file =new File(data, filename,{type:'image/jpeg'})
+        // log.info("the file size is",file.size)
+        let ffp = await fileFromPath(filename,{type:'image/jpeg'})
+        // log.info("ffp is",ffp.size, ffp.type)
+        form_data.set(k, ffp)
+    }
+    log.info("posting",form_data.get('thumb'))
+    let res = await fetch(url,{
+        method:'POST',
+        headers:{
+            'db-username': settings.users[0].name,
+            'db-password': settings.users[0].pass,
+        },
+        body:form_data as any,
+    })
+    return await res.json() as Status
+}
+
 async function multipart_test() {
     let settings:SimpleServerSettings = {
         apipath:"/api",
@@ -339,6 +372,34 @@ async function multipart_test() {
             log.assert(thumb.size === buf.length, 'the blog size is correct')
         }
 
+        {
+            log.info("============= doing a replacement")
+            let status = await api.get_by_id(target_id)
+            log.info("old status",status)
+            let old_obj:DBObj = status.data[0]
+            let attachment_filepath2 = 'src/test/thumb2.jpg'
+            let new_obj  = {
+                type: 'bookmark',
+                data: {
+                    status: 'processed',
+                    url: 'https://apps.josh.earth/',
+                }
+            }
+            let new_atts = {
+                'thumb':attachment_filepath2,
+            }
+
+            let result = await replace_with_attachments(settings, old_obj,new_obj, new_atts)
+            log.assert(result.success===true,"replace worked okay");
+            log.info("result is",result, result.data[0])
+            let thumb: Blob = await api.get_attachment(result.data[0].id, 'thumb')
+            log.info("blob is",thumb, thumb.size)
+            log.assert(thumb.type === 'image/jpeg', 'the thumb is correct')
+            let buf = await fs.promises.readFile(attachment_filepath2);
+            log.info("buf is",buf.length)
+            log.assert(thumb.size === buf.length, 'the blob size is correct')
+        }
+
     } catch (e) {
         log.error(e)
     }
@@ -348,11 +409,11 @@ async function multipart_test() {
 }
 console.log("running")
 Promise.resolve(null)
-    .then(inmemory_test)
-    .then(disk_test)
-    .then(rpc_test)
-    .then(persistence_test)
-    .then(processing_test)
+    // .then(inmemory_test)
+    // .then(disk_test)
+    // .then(rpc_test)
+    // .then(persistence_test)
+    // .then(processing_test)
     .then(multipart_test)
     .then(()=>console.log("done"))
     .catch(e => console.error(e))

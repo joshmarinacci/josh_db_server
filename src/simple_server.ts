@@ -110,6 +110,22 @@ export class SimpleDBServer {
             // log.info("/search",req.body)
             db.search(req.body).then(s => res.json(s)).catch(fail)
         })
+        this.app.post(`${settings.apipath}/replace_with_attachment`, upload.any(), (req, res)=>{
+            log.info("/replace with attachment. keys",Object.keys(req.body))
+            log.info("body",req.body)
+            if(req.body.old) req.body.old = JSON.parse(req.body.old)
+            if(req.body.replacement) req.body.replacement = JSON.parse(req.body.replacement)
+            let atts = {}
+            // @ts-ignore
+            log.info("files is",req.files)
+            // @ts-ignore
+            req.files.forEach(file => {
+                atts[file.fieldname] = file
+            })
+            req.body.replacement.attachments = atts
+            // @ts-ignore
+            db.replace(req.body.old,req.body.replacement).then(s => res.json(s)).catch(fail)
+        })
         this.app.post(`${settings.apipath}/replace`,(req, res)=>{
             // log.info("/replace",req.body)
             db.replace(req.body.old,req.body.replacement).then(s => res.json(s)).catch(fail)
