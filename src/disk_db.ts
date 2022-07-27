@@ -111,6 +111,7 @@ export class DiskDB implements DBObjAPI {
         await this._save(new_rep)
         // get rid of the old
         this.data = this.data.filter(o => o.id !== old.id)
+        log.info(`replaced ${old.id} with ${new_rep.id}`)
         return {
             success: true,
             data: [new_rep]
