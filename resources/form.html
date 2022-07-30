@@ -108,5 +108,62 @@
     })
 
 </script>
+
+<script id="scripto">
+    function postit(url) {
+        console.log("posting",url)
+        let data = {
+            type:'bookmark',
+            data: {
+                status:'unprocessed',
+                url: url
+            }
+        }
+        fetch('http://josh.earth:8675/api/create', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'db-username': 'josh',
+                'db-password': 'pass',
+            },
+            body: JSON.stringify(data),
+        }).then(resp => resp.json())
+            .then(res => console.log('yay', res))
+            .catch(e => console.error('error', e))
+        return null;
+    }
+</script>
+
+
+
+
+<p>
+
+    <a id="link" href="javascript:let url = document.location.href;">bookmarklet</a>
+
+    <script>
+        let script = `let url = document.location.href; console.log(url);
+        let data = { type:'bookmark', data: { status:'unprocessed', url: url }  };
+        console.log("data is",data);
+        fetch('http://josh.earth:8675/api/create', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'db-username': 'josh',
+                'db-password': 'pass',
+            },
+            body: JSON.stringify(data),
+        }).then(resp => resp.json())
+            .then(res => console.log('yay', res))
+            .catch(e => console.error('error', e))
+        `
+        let txt =script.replaceAll(/\n/g,"")
+        console.log("txt is",txt)
+        $("#link").setAttribute('href',"javascript:"+txt)
+
+    </script>
+
+</p>
+
 </body>
 </html>

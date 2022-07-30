@@ -101,6 +101,7 @@ export class SimpleDBServer {
             // @ts-ignore
             db.create(data).then(s => res.json(s)).catch(fail)
         })
+        this.app.options(`${settings.apipath}/create`, cors()) // enable pre-flight request for POST request
         this.app.post(`${settings.apipath}/create`, (req, res)=>{
             // log.info("/create with", req.body)
             // let data = JSON.parse(req.body.data)
