@@ -34,8 +34,15 @@ export class DiskDB implements DBObjAPI {
             log.info("reading", f)
             let buf = await fs.readFile(f);
             let item = JSON.parse(buf.toString())
-            log.info("loaded", item.id)
             this.insert_from_disk(item)
+        })
+
+        let items = this.data.slice()
+        items.forEach(it => {
+            if(it.replaces) {
+                log.info(`replacing ${it.replaces} with ${it.id} `)
+                this.data = this.data.filter(d => d.id !== it.replaces)
+            }
         })
 
         return Promise.resolve(this)

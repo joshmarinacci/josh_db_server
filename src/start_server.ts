@@ -12,7 +12,7 @@ async function start() {
     let db_api = await db.connect()
     let server = new SimpleDBServer(db_api, settings)
     await server.start()
-    console.log("loaded the DB", db)
+    console.log("loaded the DB", db.data.length)
 }
 Promise.resolve()
     .then(start)
