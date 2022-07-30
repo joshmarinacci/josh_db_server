@@ -145,7 +145,7 @@
         let script = `let url = document.location.href; console.log(url);
         let data = { type:'bookmark', data: { status:'unprocessed', url: url }  };
         console.log("data is",data);
-        fetch('http://josh.earth:8675/api/create', {
+        fetch('//docs.josh.earth/api/create', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
