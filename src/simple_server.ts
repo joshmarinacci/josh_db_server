@@ -48,11 +48,6 @@ export class SimpleDBServer {
             // callback(null, corsOptions) // callback expects two parameters: error and options
         // }
 
-        this.app.post(`${settings.apipath}/create`, (req, res)=>{
-            log.info("/create with", req.body)
-            // let data = JSON.parse(req.body.data)
-            db.create(req.body).then(s => res.json(s)).catch(fail)
-        })
         const auth_check = (req,res,next) => {
             // log.info("doing auth",req.headers, req.url,settings.apipath)
             //skip auth for '/get'
@@ -72,6 +67,11 @@ export class SimpleDBServer {
             next()
         }
         this.app.use(auth_check)
+        this.app.post(`${settings.apipath}/create`, (req, res)=>{
+            log.info("/create with", req.body)
+            // let data = JSON.parse(req.body.data)
+            db.create(req.body).then(s => res.json(s)).catch(fail)
+        })
         this.app.get(`${settings.apipath}/status`, (req, res) => {
             // log.info("/status called")
             res.json({success:true,message:"auth-good"})

@@ -121,6 +121,7 @@
         }
         fetch('http://josh.earth:8675/api/create', {
             method: 'POST',
+            mode: "no-cors",
             headers: {
                 'Content-Type': 'application/json',
                 'db-username': 'josh',
@@ -147,6 +148,7 @@
         console.log("data is",data);
         fetch('//docs.josh.earth/api/create', {
             method: 'POST',
+            mode: 'no-cors',
             headers: {
                 'Content-Type': 'application/json',
                 'db-username': 'josh',
