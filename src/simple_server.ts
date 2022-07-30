@@ -102,8 +102,20 @@ export class SimpleDBServer {
             db.create(data).then(s => res.json(s)).catch(fail)
         })
         this.app.options(`${settings.apipath}/create`, cors()) // enable pre-flight request for POST request
-        this.app.post(`${settings.apipath}/create`, (req, res)=>{
-            // log.info("/create with", req.body)
+        var corsOptionsDelegate = function (req, callback) {
+            console.log("cors request", req)
+            callback(req)
+            // var corsOptions;
+            // if (allowlist.indexOf(req.header('Origin')) !== -1) {
+            //     corsOptions = { origin: true } // reflect (enable) the requested origin in the CORS response
+            // } else {
+            //     corsOptions = { origin: false } // disable CORS for this request
+            // }
+            // callback(null, corsOptions) // callback expects two parameters: error and options
+        }
+
+        this.app.post(`${settings.apipath}/create`, corsOptionsDelegate, (req, res)=>{
+            log.info("/create with", req.body)
             // let data = JSON.parse(req.body.data)
             db.create(req.body).then(s => res.json(s)).catch(fail)
         })
