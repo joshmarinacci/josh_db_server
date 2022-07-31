@@ -143,20 +143,18 @@
     <a id="link" href="javascript:let url = document.location.href;">bookmarklet</a>
 
     <script>
-        let script = `fetch('//docs.josh.earth/api/create', {
-            method: 'POST',
-            mode: 'no-cors',
-            headers: {
-                'Content-Type': 'application/json',
-                'db-username': 'josh',
-                'db-password': 'pass',
-            },
+        let script = `var opts = {
+            method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json', 'db-username': 'josh', 'db-password': 'pass' },
             body: JSON.stringify({ type:'bookmark', data: { status:'unprocessed', url: document.location.href }})
-        }).then(resp => resp.json())
+        };
+        console.log("opts");
+        fetch('//docs.josh.earth/api/create',opts)
+            .then(resp => resp.json())
             .then(res => console.log('yay', res))
             .catch(e => console.error('error', e))
-        `
+`
         let txt =script.replaceAll(/\n/g,"")
+        txt = `javascript:(()=>{console.log("going");${txt}})()`
         console.log("txt is",txt)
         $("#link").setAttribute('href',"javascript:"+txt)
 
