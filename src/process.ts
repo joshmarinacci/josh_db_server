@@ -137,7 +137,10 @@ export async function run_processor(settings: SimpleServerSettings, api: DBObjAP
         let old = ret.data[0]
         let [new_one,atts] = await process(old)
         // @ts-ignore
-        await api.replace_with_attachments(old,new_one,atts)
+        let status = await api.replace_with_attachments(old,new_one,atts)
+        log.info("status is",status.success)
+        // @ts-ignore
+        log.info("obj is",status.data)
     } else {
         log.info("nothing to process")
     }

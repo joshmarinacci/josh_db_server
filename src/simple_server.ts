@@ -98,7 +98,7 @@ export class SimpleDBServer {
             db.get_by_id(req.params.id).then(resp => res.json(resp))
         })
         this.app.get(`${settings.apipath}/get/:id/attachment/:name`,(req,res) => {
-            log.info('doing get attachment', req.params, req.query, req.body)
+            log.info('doing get attachment', req.params)
             db.get_by_id(req.params.id).then(resp => {
                 if(resp.data.length < 1) {
                     res.status(404)
