@@ -35,6 +35,10 @@ export class SimpleDBServer {
         this.app.use(cors())
         const upload = multer({dest:'uploads/'})
 
+        this.app.use((req,res, next)=>{
+            console.log("req",req)
+            return next()
+        })
         this.app.options(`${settings.apipath}/create`, cors()) // enable pre-flight request for POST request
         // var corsOptionsDelegate = function (req, callback) {
         //     console.log("cors request", req)
