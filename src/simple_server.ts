@@ -106,6 +106,8 @@ export class SimpleDBServer {
                 }
                 let doc = resp.data[0]
                 log.info('the doc is',doc)
+                if(!doc.attachments) return res.json({success:false, message:"doc has no attachment property"})
+                if(!req.params.name) return res.json({success:false, message:"request has no name "})
                 if(doc.attachments[req.params.name]) {
                     let attachment = doc.attachments[req.params.name]
                     log.info("att:",attachment)
