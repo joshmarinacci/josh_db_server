@@ -66,11 +66,11 @@
         let html = result.data.map(item => {
             console.log("item is",item.data)
             let pdf_link = ""
-            if(item.attachments.pdf) {
+            if(item.attachments && item.attachments.pdf) {
                 pdf_link = `<a href="../api/get/${item.id}/attachment/pdf">full page (pdf)</a>`
             }
             let thumb = ""
-            if(item.attachments.thumb) {
+            if(item.attachments && item.attachments.thumb) {
                 let thumb_url = `../api/get/${item.id}/attachment/thumb`
                 console.log("thumb is",thumb_url)
                 thumb = `<a href="${thumb_url}"><img src="${thumb_url}" width="256"/></a>`
@@ -112,10 +112,10 @@
 <p>
 
     <a id="link" href="">bookmarklet</a>
-/*
+    /*
     headers: {'Content-Type': 'application/json', 'db-username': 'josh', 'db-password': 'pass' },
     body: JSON.stringify({ type:'bookmark', data: { status:'unprocessed', url: document.location.href } })
-*/
+    */
     <script>
         let script = `
         var base = '//docs.josh.earth/api/create';
