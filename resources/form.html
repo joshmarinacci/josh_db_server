@@ -112,14 +112,15 @@
 <p>
 
     <a id="link" href="">bookmarklet</a>
-
+/*
+    headers: {'Content-Type': 'application/json', 'db-username': 'josh', 'db-password': 'pass' },
+    body: JSON.stringify({ type:'bookmark', data: { status:'unprocessed', url: document.location.href } })
+*/
     <script>
         let script = `
-        var base = '//docs.josh.earth/api/create';
+        var base = 'http://docs.josh.earth:8765/api/create';
         var opts = {
             method: 'POST',
-            headers: {'Content-Type': 'application/json', 'db-username': 'josh', 'db-password': 'pass' },
-            body: JSON.stringify({ type:'bookmark', data: { status:'unprocessed', url: document.location.href } })
         };
         console.log("base",base);
         console.log("opts",opts);

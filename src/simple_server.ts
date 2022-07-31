@@ -78,7 +78,7 @@ export class SimpleDBServer {
         }
         // this.app.use(auth_check)
         this.app.post(`${settings.apipath}/create`, (req, res)=>{
-            log.info("/create with", req)
+            log.info("/create with")
             // let data = JSON.parse(req.body.data)
             db.create(req.body)
                 .then(s => res.json(s))
