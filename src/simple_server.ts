@@ -5,7 +5,7 @@ import path from "path";
 import {DBObjAPI, make_logger} from "josh_util";
 import multer from "multer"
 
-const log = make_logger()
+const log = make_logger("server")
 const fail = e => log.error(e)
 
 export type UserSettings = {
@@ -36,7 +36,8 @@ export class SimpleDBServer {
         const upload = multer({dest:'uploads/'})
 
         this.app.use((req,res, next)=>{
-            console.log("url",req.url)
+            log.info("url",req.url)
+            log.info("method",req.method)
                 console.log("original url", req.originalUrl, "base url", req.baseUrl)
             console.log('headers',req.headers)
                 console.log('body',req.body)

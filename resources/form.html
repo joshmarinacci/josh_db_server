@@ -119,15 +119,8 @@
         var opts = {
             method: 'POST',
             mode: 'no-cors',
-            headers: {
-            'Content-Type': 'application/json',
-            'db-username': 'josh',
-            'db-password': 'pass'
-            },
-            body: JSON.stringify({
-                type:'bookmark',
-                data: { status:'unprocessed', url: document.location.href }
-                })
+            headers: {'Content-Type': 'application/json', 'db-username': 'josh', 'db-password': 'pass' },
+            body: JSON.stringify({ type:'bookmark', data: { status:'unprocessed', url: document.location.href } })
         };
         console.log("base",base);
         console.log("opts",opts);
