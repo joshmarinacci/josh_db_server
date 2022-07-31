@@ -121,6 +121,7 @@
         var base = 'http://docs.josh.earth:8765/api/create';
         var opts = {
             method: 'POST',
+            headers: {'Content-Type': 'application/json', 'db-username': 'josh', 'db-password': 'pass' },
             body: JSON.stringify({ type:'bookmark', data: { status:'unprocessed', url: document.location.href } }),
         };
         console.log("base",base);
