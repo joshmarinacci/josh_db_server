@@ -35,15 +35,16 @@ export class SimpleDBServer {
         this.app.use(cors())
         const upload = multer({dest:'uploads/'})
 
-        this.app.use((req,res, next)=>{
+        function debug(req,res,next) {
             log.info("url",req.url)
             log.info("method",req.method)
-                console.log("original url", req.originalUrl, "base url", req.baseUrl)
-            console.log('headers',req.headers)
-                console.log('body',req.body)
-            return next()
-        })
-        this.app.options(`${settings.apipath}/create`, cors()) // enable pre-flight request for POST request
+            log.info("original url", req.originalUrl, "base url", req.baseUrl)
+            log.info('headers',req.headers)
+            log.info('body',req.body)
+            next()
+        }
+        this.app.use(debug)
+        // this.app.options(`${settings.apipath}/create`, cors()) // enable pre-flight request for POST request
         // var corsOptionsDelegate = function (req, callback) {
         //     console.log("cors request", req)
         //     callback(req)
