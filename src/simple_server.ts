@@ -38,10 +38,10 @@ export class SimpleDBServer {
             log.info('body',req.body)
             next()
         }
-        this.app.use(debug)
 
         this.app.use(settings.staticpath,express.static(settings.staticdir))
         this.app.use(express.json())
+        this.app.use(debug)
         this.app.use(cors())
         const upload = multer({dest:'uploads/'})
 
