@@ -140,8 +140,9 @@ export class DiskDB implements DBObjAPI {
 
         if (query.data) {
             let q_data = query.data
-            // log.info("qdata",q_data)
+            log.info("query.data",q_data)
             let res = this.data.filter(it => {
+                if(!it.data) return false
                 let passed = true
                 if(it.archived) passed = false
                 for (let [k, v] of Object.entries(q_data)) {
