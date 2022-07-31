@@ -1,9 +1,12 @@
+import {DBObj, DBObjAPI, make_logger, RPCClient, Status} from "josh_util";
+import {FormData,File } from "formdata-node"
+import {fileFromPath} from "formdata-node/file-from-path";
+
 import {Readability} from "@mozilla/readability"
 import {JSDOM} from "jsdom"
 import puppeteer from "puppeteer"
 import {SimpleServerSettings} from "./simple_server.js";
 import {Attachment} from "./db.js";
-import {DBObj, DBObjAPI, Logger, make_logger} from "josh_util";
 import {mkdir} from "josh_node_util";
 
 const SCREENSHOT_DIR = "images"
@@ -16,7 +19,7 @@ const TEST_URLS = [
     "https://arstechnica.com/gadgets/2022/07/first-risc-v-laptop-expected-to-ship-in-september/",
 ]
 
-const log:Logger = make_logger()
+const log = make_logger()
 function test() {
     Promise.all(TEST_URLS.map(url => {
         return JSDOM.fromURL(url).then(dom => {
@@ -90,14 +93,19 @@ async function get_next(settings: SimpleServerSettings, api: DBObjAPI):Promise<D
     let ret = await api.search({data: {status: 'unprocessed'}})
     return ret.data
 }
-async function process(item:DBObj) {
+async function process(item:DBObj):Promise<[object,Map<string,File>]> {
     try {
         log.info("processing", item)
         let dom = await JSDOM.fromURL(item.data.url)
         let reader = new Readability(dom.window.document)
         let article = reader.parse()
         let scan = await generate_screenshot(item.data.url)
-        return {
+        let atts = new Map<string,File>()
+        atts.set('pdf', await fileFromPath(scan.pdf.data.filepath,{type:scan.pdf.mime_type}))
+        atts.set('thumb',await fileFromPath(scan.thumb.data.filepath,{type:scan.thumb.mime_type}))
+        // new_atts.set('thumb',await fileFromPath(attachment_filepath2, {type:'image/jpeg'}))
+
+        return [{
             original: item.id,
             success: true,
             data: {
@@ -107,20 +115,16 @@ async function process(item:DBObj) {
                 byline: article.byline,
                 excerpt: article.excerpt,
                 siteName: article.siteName,
-                // @ts-ignore
-                pdf:scan.pdf,
-                // @ts-ignore
-                thumb:scan.thumb,
             }
-        }
+        },atts]
     } catch (e) {
         log.error(e)
-        return {
+        return [{
             original:item.id,
             url:item.data.url,
             success:false,
             message:e?e.toString():'unknown error',
-        }
+        }, new Map<string,File>]
     }
 }
 
@@ -131,8 +135,9 @@ export async function run_processor(settings: SimpleServerSettings, api: DBObjAP
     log.info('next docs',ret.data)
     if(ret.data.length > 0) {
         let old = ret.data[0]
-        let new_one = await process(old)
-        await api.replace(old,new_one)
+        let [new_one,atts] = await process(old)
+        // @ts-ignore
+        await api.replace_with_attachments(old,new_one,atts)
     } else {
         log.info("nothing to process")
     }
