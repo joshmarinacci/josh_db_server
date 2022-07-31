@@ -30,11 +30,6 @@ export class SimpleDBServer {
         this.settings = settings
         this.db = db
         this.app = express()
-        this.app.use(settings.staticpath,express.static(settings.staticdir))
-        this.app.use(express.json())
-        this.app.use(cors())
-        const upload = multer({dest:'uploads/'})
-
         function debug(req,res,next) {
             log.info("url",req.url)
             log.info("method",req.method)
@@ -44,6 +39,12 @@ export class SimpleDBServer {
             next()
         }
         this.app.use(debug)
+
+        this.app.use(settings.staticpath,express.static(settings.staticdir))
+        this.app.use(express.json())
+        this.app.use(cors())
+        const upload = multer({dest:'uploads/'})
+
         // this.app.options(`${settings.apipath}/create`, cors()) // enable pre-flight request for POST request
         // var corsOptionsDelegate = function (req, callback) {
         //     console.log("cors request", req)
