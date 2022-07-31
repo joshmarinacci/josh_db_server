@@ -70,7 +70,12 @@ export class SimpleDBServer {
         this.app.post(`${settings.apipath}/create`, (req, res)=>{
             log.info("/create with", req.body)
             // let data = JSON.parse(req.body.data)
-            db.create(req.body).then(s => res.json(s)).catch((e)=>res.json({success:false, message:e.toString()}))
+            db.create(req.body)
+                .then(s => res.json(s))
+                .catch((e)=>{
+                    console.log("error",e)
+                    return res.json({success:false, message:e.toString()})
+                })
         })
         this.app.get(`${settings.apipath}/status`, (req, res) => {
             // log.info("/status called")
