@@ -109,41 +109,14 @@
 
 </script>
 
-<script id="scripto">
-    function postit(url) {
-        console.log("posting",url)
-        let data = {
-            type:'bookmark',
-            data: {
-                status:'unprocessed',
-                url: url
-            }
-        }
-        fetch('http://josh.earth:8675/api/create', {
-            method: 'POST',
-            mode: "no-cors",
-            headers: {
-                'Content-Type': 'application/json',
-                'db-username': 'josh',
-                'db-password': 'pass',
-            },
-            body: JSON.stringify(data),
-        }).then(resp => resp.json())
-            .then(res => console.log('yay', res))
-            .catch(e => console.error('error', e))
-        return null;
-    }
-</script>
-
-
-
-
 <p>
 
-    <a id="link" href="javascript:let url = document.location.href;">bookmarklet</a>
+    <a id="link" href="">bookmarklet</a>
 
     <script>
-        let script = `var opts = {
+        let script = `
+        var base = '//docs.josh.earth/api/create';
+        var opts = {
             method: 'POST',
             mode: 'no-cors',
             headers: {
@@ -156,12 +129,17 @@
                 data: { status:'unprocessed', url: document.location.href }
                 })
         };
+        console.log("base",base);
         console.log("opts",opts);
-        fetch('//docs.josh.earth/api/create',opts)
-            .then(resp => resp.json())
+        fetch(base,opts)
+            .then((resp) => {
+                console.log("response",resp.ok);
+                resp.json();
+            })
             .then(res => console.log('yay', res))
             .catch(e => console.error('error', e))
 `
+        console.log(script)
         let txt =script.replaceAll(/\n/g,"")
         txt = `javascript:(()=>{console.log("going");${txt}})()`
         console.log("txt is",txt)

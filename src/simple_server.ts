@@ -36,7 +36,10 @@ export class SimpleDBServer {
         const upload = multer({dest:'uploads/'})
 
         this.app.use((req,res, next)=>{
-            console.log("req",req)
+            console.log("url",req.url)
+                console.log("original url", req.originalUrl, "base url", req.baseUrl)
+            console.log('headers',req.headers)
+                console.log('body',req.body)
             return next()
         })
         this.app.options(`${settings.apipath}/create`, cors()) // enable pre-flight request for POST request
