@@ -78,6 +78,7 @@ export class DiskDB implements DBObjAPI {
             // @ts-ignore
             attachments: obj.attachments,
         }
+        await this._validate(item)
         //convert attachments to files on disk
         // console.log("item is",item)
         await this._save_attachments(item)
@@ -113,6 +114,7 @@ export class DiskDB implements DBObjAPI {
             attachments: replacement.attachments,
         }
         //save attachments
+        await this._validate(new_rep)
         await this._save_attachments(new_rep)
         //save the new
         await this._save(new_rep)
@@ -206,5 +208,11 @@ export class DiskDB implements DBObjAPI {
             }
             item.attachments[key] = new_att
         }
+    }
+
+    private async _validate(item: DBObj) {
+        if(!item.attachments) item.attachments = {}
+        if(!item.tags) item.tags = []
+        if(!item.data) item.data = {}
     }
 }
