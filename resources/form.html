@@ -143,10 +143,7 @@
     <a id="link" href="javascript:let url = document.location.href;">bookmarklet</a>
 
     <script>
-        let script = `let url = document.location.href; console.log(url);
-        let data = { type:'bookmark', data: { status:'unprocessed', url: url }  };
-        console.log("data is",data);
-        fetch('//docs.josh.earth/api/create', {
+        let script = `fetch('//docs.josh.earth/api/create', {
             method: 'POST',
             mode: 'no-cors',
             headers: {
@@ -154,7 +151,7 @@
                 'db-username': 'josh',
                 'db-password': 'pass',
             },
-            body: JSON.stringify(data),
+            body: JSON.stringify({ type:'bookmark', data: { status:'unprocessed', url: document.location.href }})
         }).then(resp => resp.json())
             .then(res => console.log('yay', res))
             .catch(e => console.error('error', e))
