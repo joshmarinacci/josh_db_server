@@ -13,7 +13,7 @@ async function start() {
         const settings = await read_json_file(SETTINGS) as SimpleServerSettings
         let rpc = new RPCClient()
         let api: DBObjAPI = await rpc.connect(
-            `http://localhost:${settings.port}${settings.apipath}`,
+            `https://docs.josh.earth/api`,
             {type:'userpass',username:"josh",password:'pass'}
         )
         await run_processor(settings, api)
