@@ -81,7 +81,10 @@ export class SimpleDBServer {
             log.info("/create with")
             // let data = JSON.parse(req.body.data)
             db.create(req.body)
-                .then(s => res.json(s))
+                .then(s => {
+                    log.info("sending back",s)
+                    res.json(s)
+                })
                 .catch((e)=>{
                     console.log("error",e)
                     return res.json({success:false, message:e.toString()})
