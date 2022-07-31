@@ -3,7 +3,7 @@ import {DiskDB} from "../disk_db.js";
 import {SimpleDBServer, SimpleServerSettings} from "../simple_server.js";
 import {run_processor} from "../process.js";
 import {DBObj, DBObjAPI, make_logger, RPCClient, Status} from "josh_util";
-import {FormData, File, } from "formdata-node"
+import {FormData,File } from "formdata-node"
 import fetch from "node-fetch"
 import fs from "fs";
 import {fileFromPath} from "formdata-node/file-from-path";
@@ -247,25 +247,18 @@ async function processing_test() {
     await db.shutdown()
 }
 
-async function create_with_attachments(settings:SimpleServerSettings, data:object, attachments:object) {
+async function create_with_attachments(settings:SimpleServerSettings, data:object, attachments:Map<string, File>) {
     let url = `http://localhost:${settings.port}${settings.apipath}/create_with_attachment`
 
     let form_data = new FormData()
     form_data.append('data',JSON.stringify(data))
-    let atts = Object.keys(attachments)
-    for(let i=0; i<atts.length; i++) {
-        let k = atts[i]
-        let filename = attachments[k]
-        log.info("attachment",k, filename)
-        // let data = await fs.promises.readFile(filename)
-        // log.info('data length is',data.length)
-        // let file =new File(data, filename,{type:'image/jpeg'})
-        // log.info("the file size is",file.size)
-        let ffp = await fileFromPath(filename,{type:'image/jpeg'})
-        log.info("ffp is",ffp.size, ffp.type)
-        form_data.set(k, ffp)
+    for(let [k,v] of attachments) {
+        form_data.set(k,v)
+        log.info("key is",k)
     }
-    log.info("posting",form_data.get('thumb'))
+    log.info("final form data",form_data)
+    log.info("posting")
+    log.info("Url is",url)
     let res = await fetch(url,{
         method:'POST',
         headers:{
@@ -277,28 +270,40 @@ async function create_with_attachments(settings:SimpleServerSettings, data:objec
     return await res.json() as Status
 }
 
-async function replace_with_attachments(settings:SimpleServerSettings, old_data:object, data:object, attachments:object) {
+async function replace_with_attachments(settings:SimpleServerSettings, old_data:object, data:object, attachments:Map<string,File>) {
     let url = `http://localhost:${settings.port}${settings.apipath}/replace_with_attachment`
-
     let form_data = new FormData()
-    log.info("stryihngifying ",old_data)
+    // form_data.append('data',JSON.stringify(data))
     form_data.append('old',JSON.stringify(old_data))
-    log.info("stryihngifying ",data)
+    // log.info("stryihngifying ",data)
     form_data.append('replacement',JSON.stringify(data))
-    let atts = Object.keys(attachments)
-    for(let i=0; i<atts.length; i++) {
-        let k = atts[i]
-        let filename = attachments[k]
-        // log.info("attachment",k, filename)
-        // let data = await fs.promises.readFile(filename)
-        // log.info('data length is',data.length)
-        // let file =new File(data, filename,{type:'image/jpeg'})
-        // log.info("the file size is",file.size)
-        let ffp = await fileFromPath(filename,{type:'image/jpeg'})
-        // log.info("ffp is",ffp.size, ffp.type)
-        form_data.set(k, ffp)
+    for(let [k,v] of attachments) {
+        form_data.set(k,v)
+        log.info("key is",k)
     }
-    log.info("posting",form_data.get('thumb'))
+    //
+    // let form_data = new FormData()
+    // log.info("stryihngifying ",old_data)
+    // form_data.append('old',JSON.stringify(old_data))
+    // log.info("stryihngifying ",data)
+    // form_data.append('replacement',JSON.stringify(data))
+    // let atts = Object.keys(attachments)
+    // for(let i=0; i<atts.length; i++) {
+    //     let k = atts[i]
+    //     let filename = attachments[k]
+    //     // log.info("attachment",k, filename)
+    //     // let data = await fs.promises.readFile(filename)
+    //     // log.info('data length is',data.length)
+    //     // let file =new File(data, filename,{type:'image/jpeg'})
+    //     // log.info("the file size is",file.size)
+    //     let ffp = await fileFromPath(filename,{type:'image/jpeg'})
+    //     // log.info("ffp is",ffp.size, ffp.type)
+    //     form_data.set(k, ffp)
+    // }
+    // log.info("posting",form_data.get('thumb'))
+    log.info("final form data",form_data)
+    log.info("posting")
+    log.info("Url is",url)
     let res = await fetch(url,{
         method:'POST',
         headers:{
@@ -348,7 +353,12 @@ async function multipart_test() {
             // viz-ed sends to server with a new form of create call with multi-part
             // JSON and thumbnail are separate parameters (doc and thumb)
             log.info("doing create")
-            let result = await create_with_attachments(settings, obj, {'thumb': attachment_filepath})
+            let atts:Map<string,File> = new Map<string,File>();
+            atts.set('thumb',await fileFromPath(attachment_filepath, {type:'image/jpeg'}))
+            // let ffp:File = await fileFromPath(filename,{type:'image/jpeg'})
+            // @ts-ignore
+            let result = await api.create_with_attachments(obj, atts)
+            // let result = await create_with_attachments(settings,obj, atts)
             log.info("status is", result)
             log.assert(result.success, "result was good")
             target_id = result.data[0].id
@@ -385,11 +395,11 @@ async function multipart_test() {
                     url: 'https://apps.josh.earth/',
                 }
             }
-            let new_atts = {
-                'thumb':attachment_filepath2,
-            }
-
+            let new_atts:Map<string,File> = new Map<string,File>();
+            new_atts.set('thumb',await fileFromPath(attachment_filepath2, {type:'image/jpeg'}))
             let result = await replace_with_attachments(settings, old_obj,new_obj, new_atts)
+            // @ts-ignore
+            // let result = await api.replace_with_attachments(old_obj, new_obj, new_atts)
             log.assert(result.success===true,"replace worked okay");
             log.info("result is",result, result.data[0])
             let thumb: Blob = await api.get_attachment(result.data[0].id, 'thumb')
@@ -409,11 +419,11 @@ async function multipart_test() {
 }
 console.log("running")
 Promise.resolve(null)
-    // .then(inmemory_test)
-    // .then(disk_test)
-    // .then(rpc_test)
-    // .then(persistence_test)
-    // .then(processing_test)
+    .then(inmemory_test)
+    .then(disk_test)
+    .then(rpc_test)
+    .then(persistence_test)
+    .then(processing_test)
     .then(multipart_test)
     .then(()=>console.log("done"))
     .catch(e => console.error(e))

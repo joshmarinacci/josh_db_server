@@ -10,6 +10,9 @@
     "run-process": "node build/start_process.js",
     "test-api": "tsc && node build/test/test_api.js"
   },
+  "engines": {
+    "node": ">=14.18.0"
+  },
   "dependencies": {
     "@mozilla/readability": "^0.4.2",
     "cors": "^2.8.5",
@@ -19,7 +22,7 @@
     "josh_util": "0.0.4",
     "jsdom": "^20.0.0",
     "multer": "^1.4.5-lts.1",
-    "node-fetch": "^3.2.6",
+    "node-fetch": "^3.2.10",
     "parcel": "^2.6.2",
     "promisified-pipe": "^1.0.0",
     "puppeteer": "^15.3.2",

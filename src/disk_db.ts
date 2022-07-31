@@ -91,6 +91,17 @@ export class DiskDB implements DBObjAPI {
             data: [item]
         }
     }
+    create_with_attachments(data:object, attachments:Map<string,File>):Promise<Status> {
+        log.info("inside CREATe_WITH_ATTS")
+        // @ts-ignore
+        if(!data.attachments) data.attachments = {}
+        for(let k in attachments) {
+            log.info("copying",k,attachments.get(k))
+            // @ts-ignore
+            data.attachments[k] = attachments.get(k)
+        }
+        return this.create(data)
+    }
 
     async get_by_id(id: DBID): Promise<Status> {
         log.info("doing get by id for",id)
@@ -125,6 +136,9 @@ export class DiskDB implements DBObjAPI {
             success: true,
             data: [new_rep]
         }
+    }
+    replace_with_attachments(old_data:DBObj, data:object, attachments:Map<string,File>):Promise<Status> {
+        throw new Error("not implemented")
     }
 
     async search(query: any): Promise<Status> {
@@ -193,11 +207,11 @@ export class DiskDB implements DBObjAPI {
     }
 
     private async _save_attachments(item: DBObj) {
-        log.info("saving attachments from",item)
+        // log.info("saving attachments from",item)
         for(let key in item.attachments) {
-            log.info("key is",key)
+            // log.info("key is",key)
             let att = item.attachments[key]
-            log.info("att",att)
+            // log.info("att",att)
             let new_att:Attachment = {
                 type: "attachment",
                 form: "local_file_path",

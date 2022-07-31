@@ -39,6 +39,16 @@ export class InMemoryDB implements DBObjAPI {
             data: [item]
         })
     }
+    create_with_attachments(data:object, attachments:Map<string,File>):Promise<Status> {
+        // @ts-ignore
+        if(!data.attachments) data.attachments = {}
+        for(let k in attachments) {
+            log.info("copying",k,attachments.get(k))
+            // @ts-ignore
+            data.attachments[k] = attachments.get(k)
+        }
+        return this.create(data)
+    }
 
     get_by_id(id: DBID): Promise<Status> {
         throw new Error("not implemented")
@@ -69,6 +79,10 @@ export class InMemoryDB implements DBObjAPI {
             success: true,
             data: [new_rep]
         })
+    }
+
+    replace_with_attachments(old_data:DBObj, data:object, attachments:Map<string,File>):Promise<Status> {
+        throw new Error("not implemented")
     }
 
     search(query: any): Promise<Status> {

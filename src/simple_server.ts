@@ -132,6 +132,8 @@ export class SimpleDBServer {
             // @ts-ignore
             log.info("files is",req.files)
             // @ts-ignore
+            if(!req.files) return res.json({success:false, message:"missing files"})
+            // @ts-ignore
             req.files.forEach(file => {
                 atts[file.fieldname] = file
             })
@@ -151,6 +153,8 @@ export class SimpleDBServer {
             let atts = {}
             // @ts-ignore
             log.info("files is",req.files)
+            // @ts-ignore
+            if(!req.files) return res.json({success:false, message:"missing files"})
             // @ts-ignore
             req.files.forEach(file => {
                 atts[file.fieldname] = file
