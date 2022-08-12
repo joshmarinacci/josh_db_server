@@ -136,12 +136,25 @@
             .then(res => console.log('yay', res))
             .catch(e => console.error('error', e))
 `
-        console.log(script)
-        let txt =script.replaceAll(/\n/g,"")
-        txt = `javascript:(()=>{console.log("going");${txt}})()`
+        let script2 = `
+        window.open('https://docs.josh.earth/static/form.html?url='+encodeURIComponent(document.location.href),'_blank')
+        `
+        console.log(script2)
+        let txt =script2.replaceAll(/\n/g,"")
+        txt = `javascript:(()=>{console.log("loading");${txt}})()`
         console.log("txt is",txt)
         $("#link").setAttribute('href',"javascript:"+txt)
 
+    </script>
+
+    <script>
+        console.log("query is",document.location.search)
+        let q = document.location.search
+        if(q && q.startsWith && q.startsWith("?url=")) {
+            let res = decodeURIComponent(q).substring(5)
+            console.log('result is',res)
+            $("#url").value = res
+        }
     </script>
 
 </p>
