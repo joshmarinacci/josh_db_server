@@ -203,6 +203,7 @@ export class DiskDB implements DBObjAPI {
     }
 
     private insert_from_disk(item: DBObj) {
+        if(item.created_date) item.created_date = new Date(item.created_date)
         this.data.push(item)
     }
 
