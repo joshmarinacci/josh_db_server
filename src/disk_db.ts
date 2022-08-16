@@ -115,7 +115,8 @@ export class DiskDB implements DBObjAPI {
         let new_rep: DBObj = {
             id: gen_id("disk-db"),
             type: old.type,
-            tags: [],
+            // @ts-ignore
+            tags: replacement.tags || old.tags,
             replaces: old.id,
             created_date: new Date(),
             // @ts-ignore
