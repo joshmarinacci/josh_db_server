@@ -20,6 +20,12 @@ export type SimpleServerSettings = {
     staticdir:string,
     users:UserSettings[],
 }
+
+function dbg(param: any):any {
+    log.info("returning",param)
+    return param
+}
+
 export class SimpleDBServer {
     private app: Express;
     private server: http.Server;
@@ -102,12 +108,12 @@ export class SimpleDBServer {
             db.get_by_id(req.params.id).then(resp => {
                 if(resp.data.length < 1) {
                     res.status(404)
-                    return res.json({success:false, message:"no such document"})
+                    return res.json(dbg({success:false, message:"no such document"}))
                 }
                 let doc = resp.data[0]
                 log.info('the doc is',doc)
-                if(!doc.attachments) return res.json({success:false, message:"doc has no attachment property"})
-                if(!req.params.name) return res.json({success:false, message:"request has no name "})
+                if(!doc.attachments) return res.json(dbg({success:false, message:"doc has no attachment property"}))
+                if(!req.params.name) return res.json(dbg({success:false, message:"request has no name "}))
                 if(doc.attachments[req.params.name]) {
                     let attachment = doc.attachments[req.params.name]
                     log.info("att:",attachment)
@@ -117,6 +123,8 @@ export class SimpleDBServer {
                         res.type(attachment.mime_type)
                         return res.sendFile(abs)
                     }
+                } else {
+                    log.info("no attachment named",req.params.name)
                 }
                 res.status(404)
                 return res.json({success:false, message:"cannot render document"})
