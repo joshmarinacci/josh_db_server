@@ -45,14 +45,18 @@
 <h1>Add Bookmark</h1>
 <form id="bookmark">
     <div class="row">
-        <input type="hidden" name="user" id="user" value="josh">
-        <input type="hidden" name="pass" id="pass" value="pass">
+        <input type="hidden" name="user" id="user" value="">
+        <input type="hidden" name="pass" id="pass" value="">
         <input type="text" name="url" id="url" value="" class="stretch">
         <button id="save">save</button>
     </div>
     <div id="status">status</div>
 </form>
 <div>
+    <div class="row">
+        <label for="autoclose">close on save</label>
+        <input id="autoclose" name="autoclose" type="checkbox"/>
+    </div>
 <a id="link" href="">bookmarklet</a>
 </div>
 
@@ -73,8 +77,8 @@
             method:'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'db-username':'josh',
-                'db-password':'pass',
+                'db-username':$("#user").value,
+                'db-password':$("#pass").value,
             },
             body: JSON.stringify(data),
         }).then(resp => resp.json())
@@ -87,21 +91,20 @@
                 console.error('error',e)
             })
     })
-    let script2 = `
-        window.open('https://docs.josh.earth/static/form.html?url='+encodeURIComponent(document.location.href)+'&user=josh&pass=pass','_blank')
-        `
-    console.log(script2)
-    let txt =script2.replaceAll(/\n/g,"")
-    txt = `javascript:(()=>{${txt}})()`
-    console.log("txt is",txt)
-    $("#link").setAttribute('href',txt)
+    let script2 = `javascript:(()=>{window.open('https://docs.josh.earth/static/form.html?user=josh&pass=pass&url='+encodeURIComponent(document.location.href),'_blank')})()`
+    console.log("txt is",script2)
+    $("#link").setAttribute('href',script2)
 
     console.log("query is",document.location.search)
     let q = document.location.search
-    if(q && q.startsWith && q.startsWith("?url=")) {
-        let res = decodeURIComponent(q).substring(5)
-        console.log('result is',res)
-        $("#url").value = res
+    if(q && q.startsWith && q.startsWith("?")) {
+        let args = {}
+        q.substring(1).split("&").map(pt => pt.split("=")).forEach(([k,v])=> args[k]=v)
+        args['url'] = decodeURIComponent(args['url'])
+        console.log("parts",args)
+        $("#url").value = args.url
+        $("#user").value = args.user
+        $("#pass").value = args.pass
     }
     </script>
 </body>
