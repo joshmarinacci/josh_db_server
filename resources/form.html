@@ -94,7 +94,7 @@
     let txt =script2.replaceAll(/\n/g,"")
     txt = `javascript:(()=>{${txt}})()`
     console.log("txt is",txt)
-    $("#link").setAttribute('href',"javascript:"+txt)
+    $("#link").setAttribute('href',txt)
 
     console.log("query is",document.location.search)
     let q = document.location.search
