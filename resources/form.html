@@ -3,40 +3,63 @@
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
+    <style type="text/css">
+        body {
+            background-color: #ccc;
+            font-family: sans-serif;
+            /*max-width: 400px;*/
+        }
+        form {
+            /*width: 100%;*/
+            font-size: 150%;
+            border: 1px solid #333;
+            padding: 1rem;
+            margin: 1rem;
+            border-radius: 1rem;
+            background-color: #eee;
+            display: flex;
+            flex-direction: column;
+        }
+        .row {
+            display: flex;
+            flex-direction: row;
+        }
+        .stretch {
+            flex: 1.0;
+        }
+        input, button {
+            font-size: 100%;
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+            border: 1px solid #333;
+            margin: 0.5rem;
+        }
+        #status {
+            text-align: center;
+            padding: 1rem;
+        }
+
+    </style>
 </head>
 <body>
 <h1>Add Bookmark</h1>
 <form id="bookmark">
-    <label>
-        user
-        <input type="text" id="user" value="josh">
-    </label>
-    <label>
-        pass
-        <input type="text" id="pass" value="pass">
-    </label>
-    <br/>
-    <label>
-        URL
-        <input type="text" name="url" id="url" value="https://news.ycombinator.com/">
-    </label>
-    <br/>
-    <button id="save">save</button>
+    <div class="row">
+        <input type="hidden" name="user" id="user" value="josh">
+        <input type="hidden" name="pass" id="pass" value="pass">
+        <input type="text" name="url" id="url" value="" class="stretch">
+        <button id="save">save</button>
+    </div>
+    <div id="status">status</div>
 </form>
-
-<h1>current bookmarks</h1>
-<button id="load">load</button>
-<h3>bookmarks</h3>
-<ul id="processed"></ul>
-<h3>queue</h3>
-<ul id="bookmarks"></ul>
+<div>
+<a id="link" href="">bookmarklet</a>
+</div>
 
 <script>
     const $ = (sel) => document.querySelector(sel)
     const on = (el,type,cb) => el.addEventListener(type,cb)
-    console.log("doing the form")
     on($("#save"),'click',(e)=>{
-        console.log("saving the form")
         let data = {
             type:'bookmark',
             data: {
@@ -45,6 +68,7 @@
             }
         }
         e.preventDefault()
+        $("#status").innerHTML = "saving"
         fetch('../api/create',{
             method:'POST',
             headers: {
@@ -54,110 +78,31 @@
             },
             body: JSON.stringify(data),
         }).then(resp => resp.json())
-            .then(res => console.log('yay',res))
-            .catch(e => console.error('error',e))
-    })
-
-
-    function render_bookmarks(target,result) {
-        console.log("data is",result)
-        console.log("item count",result.data.length)
-        // result.data.sort((a,b)=>a.data.created_date - b.data.created_date)
-        let html = result.data.map(item => {
-            console.log("item is",item.data)
-            let pdf_link = ""
-            if(item.attachments && item.attachments.pdf) {
-                pdf_link = `<a href="../api/get/${item.id}/attachment/pdf">full page (pdf)</a>`
-            }
-            let thumb = ""
-            if(item.attachments && item.attachments.thumb) {
-                let thumb_url = `../api/get/${item.id}/attachment/thumb`
-                console.log("thumb is",thumb_url)
-                thumb = `<a href="${thumb_url}"><img src="${thumb_url}" width="256"/></a>`
-            }
-            if(item.data.title) {
-                return `<li>
-                        <a href="${item.data.url}">${item.data.title}</a>
-                        <p>${item.data.excerpt?item.data.excerpt:"no excerpt"}</p>
-                        <p>${pdf_link}</p>
-                        <p>${thumb}</p>
-                        </li>`
-            } else {
-                return `<li><a href='${item.data.url}' target="_blank">${item.data.url}</a></li>`
-            }
-        }).join("\n")
-        // console.log("html is",html)
-        target.innerHTML = html
-    }
-
-    function do_search(query) {
-        return fetch("//docs.josh.earth/api/search",{
-            method:"POST",
-            headers:{
-                'Content-Type': 'application/json',
-                'db-username':'josh',
-                'db-password':'pass',
-            },
-            body: JSON.stringify(query)
-        })
-            .then(d => d.json())
-    }
-    on($("#load"),'click',() => {
-        do_search({data:{status:'unprocessed'}}).then(data => render_bookmarks($("#bookmarks"),data))
-        do_search({data:{status:'processed'}}).then(data => render_bookmarks($("#processed"),data))
-    })
-
-</script>
-
-<p>
-
-    <a id="link" href="">bookmarklet</a>
-    /*
-    headers: {'Content-Type': 'application/json', 'db-username': 'josh', 'db-password': 'pass' },
-    body: JSON.stringify({ type:'bookmark', data: { status:'unprocessed', url: document.location.href } })
-    */
-    <script>
-        let script = `
-        var base = '//docs.josh.earth/api/create';
-        var opts = {
-            method: 'POST',
-            mode:'cors',
-            cache:'no-cache',
-            headers: {'Content-Type': 'application/json', 'db-username': 'josh', 'db-password': 'pass' },
-            body: JSON.stringify({ type:'bookmark', data: { status:'unprocessed', url: document.location.href } }),
-        };
-        console.log("base",base);
-        console.log("opts",opts);
-        fetch(base,opts)
-            .then((resp) => {
-                console.log("response",resp.ok);
-                return resp.json();
+            .then(res => {
+                $("#status").innerHTML = "saved = " + (res.success?"true":"false")
+                console.log('yay',res)
             })
-            .then(res => console.log('yay', res))
-            .catch(e => console.error('error', e))
-`
-        let script2 = `
-        window.open('https://docs.josh.earth/static/form.html?url='+encodeURIComponent(document.location.href),'_blank')
+            .catch(e => {
+                $("#status").innerHTML = "error "
+                console.error('error',e)
+            })
+    })
+    let script2 = `
+        window.open('https://docs.josh.earth/static/form.html?url='+encodeURIComponent(document.location.href)+'&user=josh&pass=pass','_blank')
         `
-        console.log(script2)
-        let txt =script2.replaceAll(/\n/g,"")
-        txt = `javascript:(()=>{console.log("loading");${txt}})()`
-        console.log("txt is",txt)
-        $("#link").setAttribute('href',"javascript:"+txt)
+    console.log(script2)
+    let txt =script2.replaceAll(/\n/g,"")
+    txt = `javascript:(()=>{${txt}})()`
+    console.log("txt is",txt)
+    $("#link").setAttribute('href',"javascript:"+txt)
 
+    console.log("query is",document.location.search)
+    let q = document.location.search
+    if(q && q.startsWith && q.startsWith("?url=")) {
+        let res = decodeURIComponent(q).substring(5)
+        console.log('result is',res)
+        $("#url").value = res
+    }
     </script>
-
-    <script>
-        console.log("query is",document.location.search)
-        let q = document.location.search
-        if(q && q.startsWith && q.startsWith("?url=")) {
-            let res = decodeURIComponent(q).substring(5)
-            console.log('result is',res)
-            $("#url").value = res
-        }
-    </script>
-
-</p>
-
 </body>
 </html>
