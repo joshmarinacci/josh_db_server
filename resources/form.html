@@ -63,6 +63,8 @@
 <script>
     const $ = (sel) => document.querySelector(sel)
     const on = (el,type,cb) => el.addEventListener(type,cb)
+    const AUTO_CLOSE = "AUTO_CLOSE"
+
     on($("#save"),'click',(e)=>{
         let data = {
             type:'bookmark',
@@ -85,6 +87,9 @@
             .then(res => {
                 $("#status").innerHTML = "saved = " + (res.success?"true":"false")
                 console.log('yay',res)
+                if(localStorage.getItem(AUTO_CLOSE) === "true") {
+                    window.close()
+                }
             })
             .catch(e => {
                 $("#status").innerHTML = "error "
@@ -106,6 +111,13 @@
         $("#user").value = args.user
         $("#pass").value = args.pass
     }
+    let autoclose = localStorage.getItem(AUTO_CLOSE)
+    console.log("autoclose is",autoclose)
+    if(autoclose) $("#autoclose").setAttribute('checked',(autoclose==="true")?true:false)
+    on($("#autoclose"),'change',(e) => {
+        console.log("sett to",e.target.checked)
+        localStorage.setItem(AUTO_CLOSE,e.target.checked?"true":"false")
+    })
     </script>
 </body>
 </html>
